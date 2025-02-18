@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 
 const ClientCard:React.FC<{client:ClientType}> = ({client}) => {
@@ -32,7 +33,7 @@ const ClientCard:React.FC<{client:ClientType}> = ({client}) => {
                                     <PencilLine className="size-5 ms-3 inline cursor-pointer hover:text-muted-foreground text-sky-600" />
                                 </CreateNewClient>
                             </h3>
-                            <Badge className="capitalize">{client.type.replace(/_/g, " ")}</Badge>
+                            <Badge variant={'outline'} className={cn("capitalize",client.type === 'loading_point'?"text-blue-600":"text-green-600")}>{client.type.replace(/_/g, " ")}</Badge>
                         </div>
                     </div>
                     <ClientCardOptions client={client} />

@@ -17,7 +17,7 @@ import { FilterIcon, Loader2 } from "lucide-react";
 
 
 interface TransactionHistoryFiltersSheetProps {
-    onFilterUpdate: (formData: FormData) => void;
+    onFilterUpdate: (formData: FormData) => void; 
 }
 
 const TransactionHistoryFiltersSheet = ({ onFilterUpdate }: TransactionHistoryFiltersSheetProps) => {
@@ -72,7 +72,7 @@ const TransactionHistoryFiltersSheet = ({ onFilterUpdate }: TransactionHistoryFi
                     <SheetTitle>Filter Transactions</SheetTitle>
                     <SheetDescription>Choose the desired filters and shorting optons to get what you are looking for.</SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col h-[calc(100svh-11rem)]">
+                <form onSubmit={handleSubmit} className="flex flex-col h-[calc(100svh-6.5rem)]">
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         <div className="space-y-4">
                             <div className="grid gap-4">
