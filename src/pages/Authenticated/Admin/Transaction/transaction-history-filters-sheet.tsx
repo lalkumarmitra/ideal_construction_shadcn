@@ -89,7 +89,7 @@ const TransactionHistoryFiltersSheet = ({ onFilterUpdate }: TransactionHistoryFi
                                     <MultiselectCombobox 
                                         options={vehicleListQuery.data?.map(p=>({label:p.number,value:p.id}))} 
                                         placeholder="Select Vehicles"
-                                        name="vehicle_ids"
+                                        name="loading_vehicle_ids"
                                     />
                                 </div>
                             </div>

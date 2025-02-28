@@ -20,3 +20,8 @@ export function formatDate(
 
 export const creators = ['community','admin'];
 export const participators = ['participator'];
+
+export function formatIndianNumber(value: number|string): string {
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+

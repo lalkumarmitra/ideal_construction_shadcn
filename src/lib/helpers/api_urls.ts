@@ -60,6 +60,7 @@ export const transaction_apis = {
     select:(id:string|number)=>get(`/transaction-details/${id}`),
     trash: (id:string|number)=> del(`/transaction/${id}`),
     search: (data:FormData | null ,page:string|number,offset:string|number)=>post(`/search-transactions/${page}/${offset}`,data),
+    export: (data:FormData | null)=>post('/export-transactions',data,{responseType: "blob"})
 }
 
 

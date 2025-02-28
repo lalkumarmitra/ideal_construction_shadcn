@@ -2,22 +2,30 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { transaction_apis } from "@/lib/helpers/api_urls";
 import TransactionHistoryFiltersSheet from "./transaction-history-filters-sheet";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, Loader2, RefreshCw, TableProperties } from "lucide-react";
 
 import { TransactionHistoryTableSkeleton } from "./transaction-table-skeleton";
 import { TransactionPagination } from "./transaction-pagination";
 import { TransactionEmptyState } from "./transaction-empty-state";
-import { SortField, SortOrder, TransactionQueryResponseType } from "./transaction-types";
+import { ColumnFilterType, SortField, SortOrder, TransactionQueryResponseType } from "./transaction-types";
 import { TransactionTable } from "./transaction-table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { TRANSACTION_TABLE_COLUMNS } from "@/lib/helpers/constants";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 const TransactionHistoryPage = () => {
     const dispatch = useAppDispatch();
     const [paginationData, setPaginationData] = useState<{page: number, offset: number}>({page: 1, offset: 7});
+    const [selectedColumns,setSelectedColumns] = useState<ColumnFilterType|null>(null);
     const [filterFormData, setFilterFormData] = useState<FormData | null>(null);
     const [sortConfig, setSortConfig] = useState<{field: SortField, order: SortOrder}>({
         field: 'loading_date',
@@ -93,7 +101,33 @@ const TransactionHistoryPage = () => {
         gcTime: 10 * 60 * 1000,
         enabled: !!filterFormData,
     });
-
+    const { mutate:download, isPending:downloading } = useMutation({
+        mutationFn: (payload: FormData) => transaction_apis.export(payload),
+        onSuccess: (data) => {
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download",`${format(new Date(), "dd-MM-yyyy")}_export.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        },
+        onError: (error) => toast.error("Download failed "+ error),
+    });
+    const handleExport = () => {
+        if (!selectedColumns) return;
+        const newFilterFormData = new FormData();
+        if (filterFormData) {
+            for (const [key, value] of filterFormData.entries()) {
+                newFilterFormData.append(key, value as string);
+            }
+        }
+        const columnNames = Object.entries(selectedColumns).filter(([_, value]) => value.status === 'show').map(([key]) => key);
+        columnNames.forEach((column) => {
+            newFilterFormData.append('columns[]', column);
+        });
+        download(newFilterFormData);
+    };
     // Handle filter updates
     const handleFilterUpdate = (newFilterData: FormData) => {
         setFilterFormData(newFilterData);
@@ -122,7 +156,30 @@ const TransactionHistoryPage = () => {
             { label: 'Transaction History', type: 'page' }
         ]));
     }, []);
-
+    useEffect(() => { 
+        const preference = localStorage.getItem('transaction_table_columns');
+        if(preference) setSelectedColumns(JSON.parse(preference));
+        else setSelectedColumns((_prev) => 
+            TRANSACTION_TABLE_COLUMNS.reduce((acc, tc) => {
+                acc[tc] = { status: 'show', iconise: false };
+                return acc;
+            }, {} as ColumnFilterType)
+        );
+    },[]);
+    useEffect(()=>{
+        if(selectedColumns){
+            localStorage.setItem('transaction_table_columns',JSON.stringify(selectedColumns));
+        }
+    },[selectedColumns]);
+    const handleCheckChange = (e: CheckedState, tc: string) => {
+        setSelectedColumns((prev)=>({
+            ...prev,
+            [tc]:{
+                status:e ? 'show' : 'hide',
+                iconise: false
+            }
+        }))
+    }
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-2 sm:px-6 pt-6 md:pt-0">
@@ -133,9 +190,39 @@ const TransactionHistoryPage = () => {
                     </p>
                 </div>
                 <div className="flex items-center gap-3 self-end md:self-auto">
-                    <Button variant="outline" size="sm" className="hidden md:flex">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <TableProperties className="mr-2 h-4 w-4" />
+                                Columns
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="">
+                            <div className="grid gap-4 ">
+                                <div className="space-y-2">
+                                    <h4 className="font-medium leading-none">Select Columns</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Choose the columns you want to see in the table
+                                    </p>
+                                </div>
+                                <div className="grid gap-3 h-64 overflow-y-auto">
+                                    {TRANSACTION_TABLE_COLUMNS.map(tc=>(
+                                        <Label key={tc} className="capitalize text-xs flex gap-2 items-center">
+                                            <Checkbox checked={selectedColumns?.[tc]?.status === 'show'} onCheckedChange={(e)=>handleCheckChange(e,tc)} id={tc} />{tc.replace(/_/g, ' ')}
+                                        </Label>
+                                    ))}
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleExport}>
+                        {downloading?(<>
+                            <Loader2 className="inline mr-2 animate-spin size-4" />
+                            Downloading ....
+                        </>):(<>
+                            <Download className="mr-2 h-4 w-4" />
+                            Export
+                        </>)}
                     </Button>
                     <TransactionHistoryFiltersSheet onFilterUpdate={handleFilterUpdate} />
                     <Button onClick={()=>transactionHistoryQuery.refetch()} variant="outline" size="icon">
@@ -155,6 +242,7 @@ const TransactionHistoryPage = () => {
                                     transactions={transactionHistoryQuery.data.transactions}
                                     sortConfig={sortConfig}
                                     handleSort={handleSort}
+                                    columnsFilters={selectedColumns}
                                 />
                             </div>
                             {(transactionHistoryQuery.data?.last_page || 0) > 1 && (

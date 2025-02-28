@@ -1,4 +1,4 @@
-import { CalendarIcon, TruckIcon, PackageIcon, ArrowRightIcon, PenBox, Trash2, Loader, Loader2, ArrowRight } from "lucide-react"
+import { CalendarIcon, TruckIcon, PackageIcon, ArrowRightIcon, PenBox, Trash2, Loader, Loader2, ArrowRight, IndianRupee } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { transaction_apis } from "@/lib/helpers/api_urls"
 import { toast } from "sonner"
 import { useParams } from "react-router-dom"
+import { formatIndianNumber } from "@/lib/utils"
 
 
 
@@ -27,7 +28,17 @@ export function TransactionCard({ transaction }: { transaction: TransactionType 
                     </Avatar>
                     <div>
                         <h3 className="font-bold text-lg">{transaction.product?.name}</h3>
-                        <p className="text-sm text-muted-foreground">TXN ID: {transaction.id}</p>
+                        <div className="grid gap-1">
+                            <p className="text-xs text-muted-foreground">TXN ID: {transaction.id}</p>
+                            <p className="text-xs text-muted-foreground">FINAL PRICE: {
+                                transaction.unloading_rate && transaction.unloading_quantity
+                                ? (<span className="font-semibold text-destructive">
+                                    <IndianRupee className="size-3 inline mr-1" />
+                                    {formatIndianNumber((parseFloat(transaction.unloading_rate)* parseFloat(transaction.unloading_quantity)).toFixed(2))}
+                                </span>)
+                                : "N/A"
+                            }</p>
+                        </div>
                     </div>
                 </div>
                 <div className="flex gap-3">

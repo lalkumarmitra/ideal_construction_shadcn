@@ -16,3 +16,10 @@ export type SortConfigType = {
     field: SortField;
     order: SortOrder;
 }
+export type ColumnStatusType = {
+    status: 'show'|'hide',
+    iconise?: boolean
+}
+export type ColumnFilterType = {
+    [key: string]: ColumnStatusType;
+}

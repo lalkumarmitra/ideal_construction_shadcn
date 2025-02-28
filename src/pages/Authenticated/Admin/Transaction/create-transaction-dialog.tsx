@@ -11,9 +11,11 @@ import { Check, ChevronsLeft, ChevronsRight, Loader2, PlusCircle, RefreshCw } fr
 import React, { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-const CreateTransactionDialog:React.FC<{defaultTransaction?:TransactionType,children?:ReactNode}> = ({defaultTransaction,children}) => {
+const CreateTransactionDialog:React.FC<{defaultTransaction?:TransactionType,children?:ReactNode,modal?:boolean}> = ({defaultTransaction,children}) => {
     const [open,setOpen] = useState(false);
     const [tabsValue,setTabsValue] = useState('purchase');
+    const [selectedVehicle,setSelectedVehicle] = useState<number|string|null>(defaultTransaction?.loading_vehicle_id?.toString() || null);
+    const [quantity,setQuantity] = useState<number|string>(defaultTransaction?.loading_quantity || 0);
     const purchaseDataRef = useRef<FormData | null>(null);
     const queryClient = useQueryClient();
     const productListQuery = useQuery<any,any,ProductType[]>({
@@ -120,7 +122,8 @@ const CreateTransactionDialog:React.FC<{defaultTransaction?:TransactionType,chil
                                     <ComboBox 
                                         defaultValue={defaultTransaction?.loading_vehicle_id?.toString() || ""}
                                         placeholder="Select Loading Vehicle" name="loading_vehicle_id" 
-                                        options={vehicleListQuery.data?.map(v=>({label:`${v.number} (${v.type})`,value:v.id.toString()}))} 
+                                        options={vehicleListQuery.data?.map(v=>({label:`${v.number} (${v.type})`,value:v.id.toString()}))}
+                                        onValueChange={(val)=>setSelectedVehicle(val)}
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -129,7 +132,13 @@ const CreateTransactionDialog:React.FC<{defaultTransaction?:TransactionType,chil
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="loading_quantity">Quantity : </Label>
-                                    <Input name="loading_quantity" id="loading_quantity" defaultValue={defaultTransaction?.loading_quantity || 0} type="number" step={0.001} />
+                                    <Input 
+                                        name="loading_quantity" 
+                                        id="loading_quantity" 
+                                        defaultValue={quantity} 
+                                        type="number" step={0.001} 
+                                        onChange={(e)=>setQuantity(e.currentTarget.value || 0)}
+                                    />
                                 </div>
                                 <div className="grid gap-2 col-span-2">
                                     <div className="flex gap-2">
@@ -163,6 +172,46 @@ const CreateTransactionDialog:React.FC<{defaultTransaction?:TransactionType,chil
                             <div className="grid gap-3 grid-cols-2">
                                 <div className="grid gap-2 col-span-2">
                                     <div className="flex gap-2">
+                                        <Label htmlFor="loading_vehicle_id">Vehicle </Label>
+                                        {(vehicleListQuery.isFetching || vehicleListQuery.isLoading) ? <Loader2 className="size-3 inline ms-1 animate-spin cursor-wait" />
+                                            :<RefreshCw
+                                            onClick={() => vehicleListQuery.refetch()} 
+                                            className={`size-3 inline ms-1 cursor-pointer`} 
+                                        />}
+                                    </div>
+                                    <ComboBox 
+                                        disabled={transactionMutation.isPending}
+                                        placeholder="Select Unloading Vehicle" 
+                                        name="unloading_vehicle_id"
+                                        id="unloading_vehicle_id"
+                                        defaultValue={defaultTransaction?.unloading_vehicle_id?.toString()||selectedVehicle?.toString() || ''}
+                                        options={vehicleListQuery.data?.map(v=>({label:`${v.number} (${v.type})`,value:v.id.toString()}))} 
+                                    />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="unloading_date">Unloading Date</Label>
+                                    <Input disabled={transactionMutation.isPending} type="date" defaultValue={defaultTransaction?.unloading_date ?? new Date().toISOString().split('T')[0]}  name="unloading_date" id="unloading_date" />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="challan">Challan : </Label>
+                                    <Input disabled={transactionMutation.isPending} name="challan_number" id="challan" defaultValue={defaultTransaction?.challan?.toString() || ''} type="number" step={1} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="unloading_rate">Sales Rate : </Label>
+                                    <Input disabled={transactionMutation.isPending} id="unloading_rate" name="unloading_rate" defaultValue={defaultTransaction?.unloading_rate ?? selectedProduct?.rate ?? ""}  key={selectedProduct?.id || "default"}  />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="unloading_quantity">Unloading Quantity : </Label>
+                                    <Input 
+                                        disabled={transactionMutation.isPending} 
+                                        id="unloading_quantity" name="unloading_quantity" 
+                                        defaultValue={defaultTransaction?.unloading_quantity ?? quantity} 
+                                        type="number" step={0.001} 
+                                    />
+                                </div>
+                                <div className="grid gap-2 col-span-2">
+                                    <div className="flex gap-2">
                                         <Label htmlFor="unloading_point_id">Unloading Point </Label>
                                         {(clientListQuery.isFetching || clientListQuery.isLoading) ? <Loader2 className="size-3 inline ms-1 animate-spin cursor-wait" />
                                             :<RefreshCw
@@ -177,40 +226,6 @@ const CreateTransactionDialog:React.FC<{defaultTransaction?:TransactionType,chil
                                         id="unloading_point_id"
                                         defaultValue={defaultTransaction?.unloading_point_id?.toString() || ''}
                                         options={clientListQuery.data?.filter(cl=>cl.type==='unloading_point').map(cl=>({label:cl.name,value:cl.id.toString()}))} 
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="unloading_date">Unloading Date</Label>
-                                    <Input disabled={transactionMutation.isPending} type="date" defaultValue={defaultTransaction?.unloading_date ?? new Date().toISOString().split('T')[0]}  name="unloading_date" id="unloading_date" />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="challan">Challan : </Label>
-                                    <Input disabled={transactionMutation.isPending} name="challan" id="challan" defaultValue={defaultTransaction?.challan?.toString() || ''} type="number" step={1} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="unloading_rate">Sales Rate : </Label>
-                                    <Input disabled={transactionMutation.isPending} id="unloading_rate" name="unloading_rate" defaultValue={defaultTransaction?.unloading_rate ?? selectedProduct?.rate ?? ""}  key={selectedProduct?.id || "default"}  />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="unloading_quantity">Unloading Quantity : </Label>
-                                    <Input disabled={transactionMutation.isPending} id="unloading_quantity" name="unloading_quantity" defaultValue={defaultTransaction?.unloading_quantity ?? 0} type="number" step={0.001} />
-                                </div>
-                                <div className="grid gap-2 col-span-2">
-                                    <div className="flex gap-2">
-                                        <Label htmlFor="loading_vehicle_id">Vehicle </Label>
-                                        {(vehicleListQuery.isFetching || vehicleListQuery.isLoading) ? <Loader2 className="size-3 inline ms-1 animate-spin cursor-wait" />
-                                            :<RefreshCw
-                                            onClick={() => vehicleListQuery.refetch()} 
-                                            className={`size-3 inline ms-1 cursor-pointer`} 
-                                        />}
-                                    </div>
-                                    <ComboBox 
-                                        disabled={transactionMutation.isPending}
-                                        placeholder="Select Unloading Vehicle" 
-                                        name="unloading_vehicle_id"
-                                        id="unloading_vehicle_id"
-                                        defaultValue={defaultTransaction?.unloading_vehicle_id?.toString()}
-                                        options={vehicleListQuery.data?.map(v=>({label:`${v.number} (${v.type})`,value:v.id.toString()}))} 
                                     />
                                 </div>
                             </div>
