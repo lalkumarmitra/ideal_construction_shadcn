@@ -8,7 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import { client_apis, product_apis, vehicle_apis } from "@/lib/helpers/api_urls";
 import { CLIENT_SIZES } from "@/lib/helpers/constants";
 import { cn } from "@/lib/utils";
-// import { useAppDispatch } from "@/redux/hooks";
 import { ClientType, ProductType, VehicleType } from "@/types/typedef";
 import { useQuery } from "@tanstack/react-query";
 import { Handshake, Ruler, ShoppingBasket, Truck, WatchIcon } from "lucide-react";
@@ -21,7 +20,6 @@ interface TransactionHistoryFiltersSheetProps {
 }
 
 const TransactionHistoryFiltersSheet = ({ onFilterUpdate }: TransactionHistoryFiltersSheetProps) => {
-    // const dispatch = useAppDispatch(); 
     const productListQuery = useQuery<any,any,ProductType[]>({
         queryKey:['products','all'],
         queryFn:()=>product_apis.list(1,1000),

@@ -12,7 +12,7 @@ import TransactionPage from '@/pages/Authenticated/Admin/Transaction/transaction
 import TransactionHistoryPage from '@/pages/Authenticated/Admin/Transaction/transaction-history-page';
 import ClientPage from '@/pages/Authenticated/Admin/Client/client-page';
 import UserProfile from '@/pages/Authenticated/Admin/User/user-profile';
-
+import CreateTransactionPage from '@/pages/Authenticated/Admin/Transaction/create-transaction/create-transaction-page';
 
 
 
@@ -20,6 +20,15 @@ import UserProfile from '@/pages/Authenticated/Admin/User/user-profile';
 
 
 export const routes: RouteType[] = [
+	{
+		isMenu: false,
+		icon: Home,
+		label: 'Transaction',
+		path: "/tr-create/:transaction_id?",
+		component: <CreateTransactionPage />,
+		layout: 'main',
+		middlewares: ['auth'],
+	},
 	{
 		isMenu: true,
 		icon: Home,

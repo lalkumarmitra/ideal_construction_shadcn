@@ -8,8 +8,8 @@ import { ColumnFilterType, SortConfigType, SortField } from "./transaction-types
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowDown, ArrowUp, CalendarIcon, Download, Truck, MoreHorizontal, Eye, FileEdit, Trash2, IndianRupee } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ArrowDown, ArrowUp, CalendarIcon, Truck, IndianRupee, UserCog2 } from "lucide-react";
+import TableActionOptions from "./table-action-options";
 
 type TransactionTableProps = {
     transactions: TransactionType[];
@@ -97,7 +97,10 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                     {columnsFilters?.challan_number?.status === 'show' && (
                         <TableHead className="w-[100px] text-right">Challan Number</TableHead>
                     )}
-                    <TableHead className="w-[100px] text-right">Documents</TableHead>
+                    {columnsFilters?.transport_expense?.status === 'show' && (
+                        <TableHead className="w-[100px] text-right">Expense</TableHead>
+                    )}
+                    <TableHead className="w-[100px] text-right">Info</TableHead>
                     <TableHead className="w-[80px] text-right">Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -283,7 +286,14 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                         )}
                         {columnsFilters?.challan_number?.status === 'show' && (
                             <TableCell className="text-right">
-                                {transaction.challan ? ('Challan: ' + transaction.challan) : 'N/A'}
+                                {transaction.challan_number ? (transaction.challan_number) : 'N/A'}
+                            </TableCell>
+                        )}
+                        {columnsFilters?.transport_expense?.status === 'show' && (
+                            <TableCell className="text-right">
+                                {transaction.transport_expense ? (<>
+                                    <IndianRupee className="inline size-4 me-2" />{transaction.transport_expense}
+                                </>) : 'N/A'}
                             </TableCell>
                         )}
                         <TableCell className="text-right">
@@ -310,14 +320,14 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <Download className="h-4 w-4" />
+                                                <UserCog2 className="h-4 w-4" />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <div className="space-y-1">
-                                                <p className="font-medium">Documents</p>
-                                                <p className="text-xs">DO: {transaction.do_number || "N/A"}</p>
-                                                <p className="text-xs">Challan: {transaction.challan || "N/A"}</p>
+                                                <p className="font-medium">Drivers</p>
+                                                <p className="text-xs">Loading: {transaction.loading_driver?.name || "N/A"}</p>
+                                                <p className="text-xs">Unloading: {transaction.unloading_driver?.name || "N/A"}</p>
                                             </div>
                                         </TooltipContent>
                                     </Tooltip>
@@ -325,32 +335,7 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                             </div>
                         </TableCell>
                         <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem>
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        <span>View Details</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem >
-                                            <FileEdit className="mr-2 h-4 w-4" />
-                                            <span>Edit Transaction</span>
-                                        {/* <CreateTransactionDialog defaultTransaction={transaction} >
-                                        </CreateTransactionDialog> */}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        <span>Delete Transaction</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <TableActionOptions transaction={transaction} />
                         </TableCell>
                     </TableRow>
                 ))}

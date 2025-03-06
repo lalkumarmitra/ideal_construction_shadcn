@@ -1,25 +1,12 @@
-"use client";
+
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { format as formatDateFns } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDebounce } from "@/hooks/use-debounce";
-
 
 interface DateTimePickerProps {
     name: string;
@@ -27,7 +14,9 @@ interface DateTimePickerProps {
     onChange?: (value: string) => void;
     triggerButton?: React.ReactNode;
     isDialog?: boolean;
-    disabled?:boolean;
+    disabled?: boolean;
+    defaultValue?: Date;
+    value?: Date; // Explicitly typed as optional Date
 }
 
 const DateTimePicker: React.FC<DateTimePickerProps> = ({
@@ -36,24 +25,32 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     onChange,
     triggerButton,
     isDialog = false,
-    disabled = false
+    disabled = false,
+    defaultValue,
+    value, // Controlled value
 }) => {
-    const [date, setDate] = useState<Date>();
-    const [time, setTime] = useState<string>("12:00");
+    // Prioritize the controlled value if provided, otherwise use defaultValue or undefined
+    const [date, setDate] = useState<Date | undefined>(value || defaultValue || undefined);
     const [isOpen, setIsOpen] = useState(false);
 
+    // Effect to update internal state when value prop changes
+    useEffect(() => {
+        if (value) {
+            console.log(value);
+            // setDate(value);
+        }
+    }, [value]);
+
     const handleFormatDate = useCallback(
-        (date: Date | undefined, time: string, format: string) => {
+        (date: Date | undefined, format: string) => {
             if (!date) return "";
-            const [hours, minutes] = time.split(":");
             const dateWithTime = new Date(date);
-            dateWithTime.setHours(parseInt(hours), parseInt(minutes));
-            return formatDateFns(dateWithTime, format); // Use date-fns for formatting
+            return formatDateFns(dateWithTime, format);
         },
         []
     );
 
-    const formattedDate = useMemo(() => handleFormatDate(date, time, dateFormat), [date, time, dateFormat, handleFormatDate]);
+    const formattedDate = useMemo(() => handleFormatDate(date, dateFormat), [date, dateFormat, handleFormatDate]);
     const debouncedFormattedDate = useDebounce(formattedDate, 300);
 
     useEffect(() => {
@@ -72,54 +69,20 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         [isDialog]
     );
 
-    const timeOptions = useMemo(() => {
-        return Array.from({ length: 24 * 4 }, (_, index) => {
-            const hours = Math.floor(index / 4);
-            const minutes = (index % 4) * 15;
-            return `${hours.toString().padStart(2, "0")}:${minutes
-                .toString()
-                .padStart(2, "0")}`;
-        });
-    }, []);
-
     const DateTimePickerContent = useMemo(
         () => (
             <div className="p-4">
-                <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleSelectDate}
-                    initialFocus
-                />
-                <div className="flex items-center mt-4">
-                    <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                    <Select value={time} onValueChange={setTime}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {timeOptions.map((timeString) => (
-                                <SelectItem key={timeString} value={timeString}>
-                                    {timeString}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                <Calendar mode="single" selected={date} onSelect={handleSelectDate} initialFocus />
             </div>
         ),
-        [date, time, handleSelectDate, timeOptions]
+        [date, handleSelectDate]
     );
 
     if (isDialog) {
         return (
             <>
                 {DateTimePickerContent}
-                <input
-                    type="hidden"
-                    name={name}
-                    value={debouncedFormattedDate}
-                />
+                <input type="hidden" name={name} value={debouncedFormattedDate} />
             </>
         );
     }
@@ -128,29 +91,15 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 {triggerButton || (
-                    <Button
-                        disabled={disabled}
-                        variant={"outline"}
-                        className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !date && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date
-                            ? debouncedFormattedDate
-                            : "Pick a date"}
+                    <Button disabled={disabled} variant={"outline"} className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
+                        {date ? debouncedFormattedDate : "Pick a date"}
                     </Button>
                 )}
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
                 {DateTimePickerContent}
             </PopoverContent>
-            <input
-                type="hidden"
-                name={name}
-                value={debouncedFormattedDate}
-            />
+            <input type="hidden" name={name} value={debouncedFormattedDate} />
         </Popover>
     );
 };

@@ -23,4 +23,7 @@ export const TRANSACTION_TABLE_COLUMNS = [
     'vehicle',
     'do_number',
     'challan_number',
+    'loading_driver',
+    'unloading_driver',
+    'transport_expense'
 ]

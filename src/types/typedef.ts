@@ -1,3 +1,5 @@
+import { UserType } from "./user";
+
 export type ProductType = {
     id:number;
     name:string;
@@ -41,9 +43,15 @@ export type TransactionType = {
     unloading_rate:string|null;
     unloading_quantity:string|null;
     challan:string|null;
+    challan_number: string|null;
     do_number:string|null;
     txn_type:string,
     is_sold:string;
+    transport_expense?:string|number;
+    loading_driver_id?:string|number;
+    unloading_driver_id?:string|number;
+    loading_driver?:UserType;
+    unloading_driver?:UserType;
     product?:ProductType;
     loading_point?:ClientType;
     unloading_point?:ClientType;

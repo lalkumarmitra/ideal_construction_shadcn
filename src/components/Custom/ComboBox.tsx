@@ -19,24 +19,28 @@ interface ComboBoxProps extends React.ComponentPropsWithoutRef<typeof Input> {
 }
 
 const ComboBox: React.FC<ComboBoxProps> = ({
-    options,
+    options = [],
     placeholder = "Select an item ...",
     id = "select",
     onValueChange = () => null,
     className,
-    defaultValue,
+    defaultValue = "",
     disabled,
     ...props
 }) => {
     const [open, setOpen] = React.useState(false)
-    const [value, setValue] = React.useState(defaultValue as string ?? "")
+    const [value, setValue] = React.useState(defaultValue)
     const buttonRef = React.useRef<HTMLButtonElement>(null)
 
     React.useEffect(() => {
-        options?.find((option) => option.value === value)
-        onValueChange(value);
-    }, [value, options, onValueChange]);
-
+        if (value && value !== defaultValue) {
+            onValueChange(String(value));
+        }
+    }, [value, defaultValue, onValueChange]); 
+    React.useEffect(()=>{
+        if(defaultValue && defaultValue !== value)
+        setValue(defaultValue);
+    },[defaultValue]);
     const handleSelect = (currentValue: string) => {
         setValue(currentValue === value ? "" : currentValue)
         setOpen(false)
@@ -47,16 +51,9 @@ const ComboBox: React.FC<ComboBoxProps> = ({
             <input type="hidden" value={value} {...props} />
             <Popover modal={true} open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                    <Button
-                        ref={buttonRef}
-                        disabled={disabled}
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className={cn("w-full justify-between", className)}
-                    >
+                    <Button ref={buttonRef} disabled={disabled} variant="outline" role="combobox" aria-expanded={open} className={cn("w-full justify-between", className)}>
                         {value
-                            ? options?.find((option) => option.value === value)?.label
+                            ? options.find((option) => option.value === value)?.label
                             : <span className="text-muted-foreground">{placeholder}</span>}
                         <ChevronsUpDown className="opacity-50" />
                     </Button>
@@ -71,10 +68,10 @@ const ComboBox: React.FC<ComboBoxProps> = ({
                         <CommandList className="max-h-60 overflow-y-auto">
                             <CommandEmpty>No Items found.</CommandEmpty>
                             <CommandGroup>
-                                {options?.map((option) => (
+                                {options.map((option) => (
                                     <CommandItem
                                         key={option.value}
-                                        value={option.label}
+                                        value={option.value} // Changed from option.label to option.value
                                         onSelect={() => handleSelect(option.value)}
                                     >
                                         <span>{option.label}</span>

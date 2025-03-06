@@ -30,6 +30,11 @@ export function TransactionCard({ transaction }: { transaction: TransactionType 
                         <h3 className="font-bold text-lg">{transaction.product?.name}</h3>
                         <div className="grid gap-1">
                             <p className="text-xs text-muted-foreground">TXN ID: {transaction.id}</p>
+                            <p className="text-xs text-muted-foreground">Expense : 
+                                <span className="font-semibold text-blue-500">
+                                    <IndianRupee className="size-3 inline" /> {transaction.transport_expense}
+                                </span>
+                            </p>
                             <p className="text-xs text-muted-foreground">FINAL PRICE: {
                                 transaction.unloading_rate && transaction.unloading_quantity
                                 ? (<span className="font-semibold text-destructive">
