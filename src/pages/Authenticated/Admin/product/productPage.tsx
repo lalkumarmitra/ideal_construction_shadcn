@@ -9,6 +9,8 @@ import { useAppDispatch } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import CreateProductModal from "./create-product-modal";
 import { ListPagination } from "@/components/Custom/ListPagination";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 type ProductQueryResponseType = {
     products:ProductType[],
@@ -25,8 +27,8 @@ const ProductPage = () => {
         queryKey:['products',page,offset],
         queryFn: ()=>product_apis.list(page ?? 1,offset ?? 10),
         select: (res)=> res.data,
-        staleTime : 10 * 60 * 100,
-        gcTime : 10 * 60 * 100,
+        staleTime : 10 * 60 * 60 * 100,
+        gcTime : 10 * 60 * 60 * 100,
         enabled : !!page && !!offset
     });
     useEffect(()=>{
@@ -36,7 +38,12 @@ const ProductPage = () => {
         <div className="p-4 sm:p-6 lg:p-8 space-y-8 ">
             <div className="flex flex-row items-center justify-between gap-4 px-6 pt-6 md:pt-0">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Products</h1>
-                <CreateProductModal />
+                <div className="flex gap-2">
+                    <CreateProductModal />
+                    <Button onClick={()=>productListQuery.refetch()} variant="outline" size="icon">
+                        <RefreshCw className={(productListQuery.isLoading || productListQuery.isRefetching)?"animate-spin size-4": "size-4"} />
+                    </Button>
+                </div>
             </div>
             {productListQuery.isLoading && <ProductPageSkeleton />}
             {productListQuery.data && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">

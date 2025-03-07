@@ -58,7 +58,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({  defaultTransaction, 
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <Progress value={currentStep === 1 ? 50 : 100} className="w-full" />
             {currentStep === 1 && ( <TransactionFormStep1  formData={formData} updateFormData={updateFormData} defaultTransaction={defaultTransaction}/>)}
             {currentStep === 2 && ( <TransactionFormStep2  formData={formData} updateFormData={updateFormData} defaultTransaction={defaultTransaction} />)}

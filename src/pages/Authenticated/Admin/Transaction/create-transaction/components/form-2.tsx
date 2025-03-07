@@ -49,7 +49,7 @@ const TransactionFormStep2: React.FC<StepProps> = ({ formData, updateFormData, d
                 <CardDescription>Provide details for unloading the transaction</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                     {/* Transport Expense (Optional) */}
                     <div className="grid gap-2">
                         <Label htmlFor="transport_expense">

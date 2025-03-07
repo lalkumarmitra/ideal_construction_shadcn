@@ -11,7 +11,8 @@ import { ListPagination } from "@/components/Custom/ListPagination";
 import CreateTransactionDialog from "./create-transaction-dialog";
 import { TransactionCard } from "./transaction-card";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 
 type TransactionQueryResponseType = {
@@ -29,8 +30,8 @@ const TransactionPage = () => {
         queryKey:['transactions',page,offset],
         queryFn: ()=>transaction_apis.list(page ?? 1,offset ?? 10),
         select: (res)=> res.data,
-        staleTime : 10 * 60 * 100,
-        gcTime : 10 * 60 * 100,
+        staleTime : 10 * 10 * 60 * 100,
+        gcTime : 10 * 10 * 60 * 100,
         enabled : !!page && !!offset
     });
     useEffect(()=>{
@@ -40,9 +41,14 @@ const TransactionPage = () => {
         <div className="p-4 sm:p-6 lg:p-8 space-y-8 ">
             <div className="flex flex-row items-center justify-between gap-4 px-6 pt-6 md:pt-0">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Transactions</h1>
-                <CreateTransactionDialog />
+                <div className="flex gap-2">
+                    <CreateTransactionDialog />
+                    <Button onClick={()=>transactionListQuery.refetch()} variant="outline" size="icon">
+                        <RefreshCw className={(transactionListQuery.isLoading || transactionListQuery.isRefetching)?"animate-spin size-4": "size-4"} />
+                    </Button>
+                </div>
             </div>
-            {transactionListQuery.isLoading && <TransactionPageSkeleton />}
+            {transactionListQuery.isLoading || transactionListQuery.isRefetching && <TransactionPageSkeleton />}
             <div className="grid gap-4 xl:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 place-items-center">
                 {transactionListQuery.data && transactionListQuery.data.transactions.map((tr,i)=>(<TransactionCard key={i} transaction={tr} />))}
             </div>

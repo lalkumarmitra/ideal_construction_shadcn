@@ -37,10 +37,12 @@ const ComboBox: React.FC<ComboBoxProps> = ({
             onValueChange(String(value));
         }
     }, [value, defaultValue, onValueChange]); 
-    React.useEffect(()=>{
+    
+    React.useEffect(() => {
         if(defaultValue && defaultValue !== value)
         setValue(defaultValue);
     },[defaultValue]);
+    
     const handleSelect = (currentValue: string) => {
         setValue(currentValue === value ? "" : currentValue)
         setOpen(false)
@@ -58,11 +60,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
                         <ChevronsUpDown className="opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent
-                    className="w-full p-0"
-                    style={{ width: buttonRef.current?.offsetWidth }}
-                    align="start"
-                >
+                <PopoverContent className="w-full p-0" style={{ width: buttonRef.current?.offsetWidth }} align="start">
                     <Command className="w-full">
                         <CommandInput placeholder="Search ..." />
                         <CommandList className="max-h-60 overflow-y-auto">
@@ -71,7 +69,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
                                 {options.map((option) => (
                                     <CommandItem
                                         key={option.value}
-                                        value={option.value} // Changed from option.label to option.value
+                                        value={option.label} // Changed to option.label for filtering
                                         onSelect={() => handleSelect(option.value)}
                                     >
                                         <span>{option.label}</span>

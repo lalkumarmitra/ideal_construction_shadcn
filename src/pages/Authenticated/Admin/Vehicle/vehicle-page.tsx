@@ -9,6 +9,8 @@ import { useAppDispatch } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import VehicleCard from "./vehicle-card";
 import CreateVehicleDialog from "./create-vehicle-modal";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 
 interface VehicleListQueryResponse {
@@ -26,8 +28,8 @@ const VehiclePage = () => {
         queryKey:['vehicles',page,offset],
         queryFn: ()=>vehicle_apis.list(page ?? 1,offset ?? 10),
         select: (res)=> res.data,
-        staleTime : 10 * 60 * 100,
-        gcTime : 10 * 60 * 100,
+        staleTime : 10 * 60 * 60 * 100,
+        gcTime : 10 * 60 * 60 * 100,
         enabled : !!page && !!offset
     });
     useEffect(()=>{
@@ -37,7 +39,12 @@ const VehiclePage = () => {
         <div className="p-4 sm:p-6 lg:p-8 space-y-8 ">
             <div className="flex flex-row items-center justify-between gap-4 px-6 pt-6 md:pt-0">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Vehicles</h1>
-                <CreateVehicleDialog />
+                <div className="flex gap-2">
+                    <CreateVehicleDialog />
+                    <Button onClick={()=>vehicleListQuery.refetch()} variant="outline" size="icon">
+                        <RefreshCw className={(vehicleListQuery.isLoading || vehicleListQuery.isRefetching)?"animate-spin size-4": "size-4"} />
+                    </Button>
+                </div>
             </div>
             {vehicleListQuery.isLoading && <VehiclePageSkeleton />}
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

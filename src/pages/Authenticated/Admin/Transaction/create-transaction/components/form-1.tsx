@@ -54,7 +54,7 @@ const TransactionFormStep1: React.FC<StepProps> = ({ formData, updateFormData, d
                 <CardDescription>Provide details for loading the transaction</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                     {/* Product Selection */}
                     <div className="grid gap-2">
                         <Label htmlFor="product_id">
@@ -124,11 +124,12 @@ const TransactionFormStep1: React.FC<StepProps> = ({ formData, updateFormData, d
                     </div>
 
                     {/* DO Number (Optional) */}
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 text-muted-foreground" >
                         <Label htmlFor="do_number">
                             <DockIcon className="size-4 inline mr-2" /> DO Number (Optional)
                         </Label>
                         <Input 
+                            disabled
                             id="do_number"
                             placeholder="DO Number"
                             value={formData.do_number || defaultTransaction?.do_number || ''}
@@ -137,11 +138,12 @@ const TransactionFormStep1: React.FC<StepProps> = ({ formData, updateFormData, d
                     </div>
 
                     {/* Loading Rate (Optional) */}
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 text-muted-foreground">
                         <Label htmlFor="loading_rate">
                             <WeightIcon className="size-4 inline mr-2" /> Loading Rate (Optional)
                         </Label>
                         <Input 
+                            disabled
                             id="loading_rate"
                             type="number"
                             step="0.01"

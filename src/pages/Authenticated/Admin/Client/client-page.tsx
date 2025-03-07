@@ -11,6 +11,8 @@ import { ListPagination } from "@/components/Custom/ListPagination";
 import CreateNewClient from "./create-client-dialog";
 import ClientCard from "./client-card";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 type ClientListQueryResponseType = {
     clients : ClientType[],
@@ -27,8 +29,8 @@ const ClientPage = () => {
         queryKey:['clients',page,offset],
         queryFn: ()=>client_apis.list(page ?? 1,offset ?? 10),
         select: (res)=> res.data,
-        staleTime : 10 * 60 * 100,
-        gcTime : 10 * 60 * 100,
+        staleTime : 10 * 60 * 60 * 100,
+        gcTime : 10 * 60 * 60 * 100,
         enabled : !!page && !!offset
     });
     useEffect(()=>{
@@ -38,7 +40,12 @@ const ClientPage = () => {
         <div className="p-4 sm:p-6 lg:p-8 space-y-8 ">
             <div className="flex flex-row items-center justify-between gap-4 px-6 pt-6 md:pt-0">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Clients</h1>
-                <CreateNewClient />
+                <div className="flex gap-2">
+                    <CreateNewClient />
+                    <Button onClick={()=>clientListQuery.refetch()} variant="outline" size="icon">
+                        <RefreshCw className={(clientListQuery.isLoading || clientListQuery.isRefetching)?"animate-spin size-4": "size-4"} />
+                    </Button>
+                </div>
             </div>
             {clientListQuery.isLoading && <ClientPageSkeleton />}
             {clientListQuery.data && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">

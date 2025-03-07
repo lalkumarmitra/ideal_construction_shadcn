@@ -293,7 +293,7 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                             <TableCell className="text-right">
                                 {transaction.transport_expense ? (<>
                                     <IndianRupee className="inline size-4 me-2" />{transaction.transport_expense}
-                                </>) : 'N/A'}
+                                </>) : '-'}
                             </TableCell>
                         )}
                         <TableCell className="text-right">
