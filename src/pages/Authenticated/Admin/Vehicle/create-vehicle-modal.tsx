@@ -34,8 +34,9 @@ const CreateVehicleDialog:React.FC<CreateVehicleDialogProps>=({defaultVehicle=nu
     }
     return <Dialog open={vehicleMutation.isPending || open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-            {children?children:<Button>
-                <PlusCircle className="size-4 mr-2 inline" /> Add New Vehicle
+            {children?children:<Button className="flex gap-2">
+                <PlusCircle className="size-4 inline" /> 
+                <span className="hidden md:inline">Add New Vehicle</span>
             </Button>}
         </DialogTrigger>
         <DialogContent>

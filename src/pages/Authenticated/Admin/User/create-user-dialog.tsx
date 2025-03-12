@@ -44,7 +44,11 @@ const CreateUserDialog:React.FC<CreateUserDialogProps> = ({defaultUser,children}
     return (
         <Dialog open={userMutation.isPending || open} onOpenChange={setOpen} >
             <DialogTrigger asChild>
-                {children ? children  : <Button><PlusCircle className="size-4 mr-2 inline" />{defaultUser?'Update User Details':'Add New User'}</Button>}
+                {children ? children  : 
+                    <Button className="flex gap-2">
+                        <PlusCircle className="size-4 inline" />
+                        <span className="hidden md:inline" >{defaultUser?'Update User Details':'Add New User'}</span>
+                    </Button>}
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
@@ -99,7 +103,7 @@ const CreateUserDialog:React.FC<CreateUserDialogProps> = ({defaultUser,children}
                             <DialogClose asChild>
                                 <Button variant={'secondary'}>Close</Button>
                             </DialogClose>
-                            <Button type="submit"> {userMutation.isPending && <Loader2 className="animate-spin inline size-4" />} {defaultUser ? 'Update' : 'Save'}</Button>
+                            <Button disabled={userMutation.isPending} type="submit"> {userMutation.isPending && <Loader2 className="animate-spin inline size-4" />} {defaultUser ? 'Update' : 'Save'}</Button>
                         </DialogFooter>
                     </div>
                 </form>

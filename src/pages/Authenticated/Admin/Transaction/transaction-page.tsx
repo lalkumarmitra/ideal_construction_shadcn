@@ -1,7 +1,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionType } from "@/types/typedef";
@@ -13,7 +13,7 @@ import { TransactionCard } from "./transaction-card";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowRightIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { useDebounce } from "@/hooks/use-debounce";
 
 type TransactionQueryResponseType = {
     transactions:TransactionType[],
@@ -26,14 +26,27 @@ type TransactionQueryResponseType = {
 const TransactionPage = () => {
     const dispatch = useAppDispatch();
     const {page,offset} = useParams();
-    const transactionListQuery = useQuery<any,any,TransactionQueryResponseType>({
-        queryKey:['transactions',page,offset],
-        queryFn: ()=>transaction_apis.list(page ?? 1,offset ?? 10),
-        select: (res)=> res.data,
-        staleTime : 10 * 10 * 60 * 100,
-        gcTime : 10 * 10 * 60 * 100,
-        enabled : !!page && !!offset
+    const searchText = useAppSelector(state => state.ui.searchText);
+    const debouncedSearchText = useDebounce(searchText, 500);
+
+    const transactionListQuery = useQuery<any, any, TransactionQueryResponseType>({
+        queryKey: ['transactions', page, offset, debouncedSearchText],
+        queryFn: () => {
+            const formData = new FormData();
+            if (debouncedSearchText) {
+                formData.set('search', debouncedSearchText);
+            }
+            return transaction_apis.search(formData, page ?? '1', offset ?? '10');
+        },
+        select: (res) => res.data,
+        staleTime: 10 * 60 * 1000, // 10 minutes in milliseconds
+        gcTime: 10 * 60 * 1000, // 10 minutes in milliseconds
+        enabled: !!page && !!offset
     });
+
+    useEffect(() => {
+        transactionListQuery.refetch();
+    }, [debouncedSearchText]);
     useEffect(()=>{
         dispatch(setBreadcrumb([{label:'Dashboard',link:'/dashboard'},{label:'Transaction List',type:'page'}]))
     },[])

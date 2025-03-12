@@ -140,7 +140,7 @@ const CreateTransactionPage: React.FC = () => {
                         </Button>
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className='p-2 md:p-4'>
                     {isLoading && <TransactionFormSkeleton />}
                     
                     {isError && transaction_id ? (renderErrorState()) : (!isLoading && (

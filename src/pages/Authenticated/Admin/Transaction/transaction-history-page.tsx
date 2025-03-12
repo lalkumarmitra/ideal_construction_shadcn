@@ -1,6 +1,6 @@
 // transaction-history-page.tsx
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { transaction_apis } from "@/lib/helpers/api_urls";
@@ -21,9 +21,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/use-debounce";
+
 
 const TransactionHistoryPage = () => {
     const dispatch = useAppDispatch();
+    const searchText = useAppSelector(state => state.ui.searchText);
+    const debouncedSearchText = useDebounce(searchText, 500);
     const [paginationData, setPaginationData] = useState<{page: number, offset: number}>({page: 1, offset: 7});
     const [selectedColumns,setSelectedColumns] = useState<ColumnFilterType|null>(null);
     const [filterFormData, setFilterFormData] = useState<FormData | null>(null);
@@ -40,13 +44,34 @@ const TransactionHistoryPage = () => {
         setFilterFormData(formData);
     }, []);
 
+    // Update search in filter form data
+    useEffect(() => {
+        if (!filterFormData) return;
+        
+        const newFilterFormData = new FormData();
+        // Preserve existing filter values
+        for (const [key, value] of filterFormData.entries()) {
+            newFilterFormData.append(key, value as string);
+        }
+        
+        // Update search value
+        if (debouncedSearchText) {
+            newFilterFormData.set('search', debouncedSearchText);
+        } else {
+            newFilterFormData.delete('search');
+        }
+        
+        setFilterFormData(newFilterFormData);
+    }, [debouncedSearchText]);
+
     // Query with filters
     const transactionHistoryQuery = useQuery<any, any, TransactionQueryResponseType>({
         queryKey: ['transactions', 'history', {
             page: paginationData.page,
             offset: paginationData.offset,
             filters: Array.from(filterFormData?.entries() ?? []),
-            sort: sortConfig
+            sort: sortConfig,
+            search: debouncedSearchText
         }],
         queryFn: () => transaction_apis.search(filterFormData, paginationData.page, paginationData.offset),
         select: (res) => {
@@ -130,6 +155,10 @@ const TransactionHistoryPage = () => {
     };
     // Handle filter updates
     const handleFilterUpdate = (newFilterData: FormData) => {
+        // Preserve search value when filters are updated
+        if (debouncedSearchText) {
+            newFilterData.set('search', debouncedSearchText);
+        }
         setFilterFormData(newFilterData);
         setPaginationData(prev => ({ ...prev, page: 1 })); // Reset to first page when filters change
     };
@@ -189,7 +218,7 @@ const TransactionHistoryPage = () => {
                         View and manage all transactions with advanced filtering options
                     </p>
                 </div>
-                <div className="flex items-center gap-3 self-end md:self-auto">
+                <div className="flex items-center gap-3 self-end md:self-auto flex-wrap ">
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" size="sm">
@@ -215,7 +244,7 @@ const TransactionHistoryPage = () => {
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleExport}>
+                    <Button variant="outline" size="sm" className="flex" onClick={handleExport}>
                         {downloading?(<>
                             <Loader2 className="inline mr-2 animate-spin size-4" />
                             Downloading ....

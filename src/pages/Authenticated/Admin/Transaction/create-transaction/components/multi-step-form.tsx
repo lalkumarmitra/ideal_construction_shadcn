@@ -1,7 +1,6 @@
 // src/components/transaction/TransactionForm.tsx
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Save } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
@@ -62,19 +61,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({  defaultTransaction, 
             <Progress value={currentStep === 1 ? 50 : 100} className="w-full" />
             {currentStep === 1 && ( <TransactionFormStep1  formData={formData} updateFormData={updateFormData} defaultTransaction={defaultTransaction}/>)}
             {currentStep === 2 && ( <TransactionFormStep2  formData={formData} updateFormData={updateFormData} defaultTransaction={defaultTransaction} />)}
-            <Card>
-                <CardFooter className="flex justify-between p-4">
-                    {currentStep > 1 && (
-                        <Button  variant="outline"  onClick={() => setCurrentStep(prev => prev - 1)}>
-                            <ArrowLeft className="mr-2 size-4" /> Previous
-                        </Button>
-                    )}
-                    <Button  onClick={handleNextStep} className={`ml-auto ${currentStep === 1 ? '' : 'gap-2'}`}>
-                        {currentStep === 1 ? 'Next' : 'Save Transaction'}
-                        {currentStep === 1  ? <ArrowRight className="size-4" />  : <Save className="size-4" />}
+            <div className="flex flex-col gap-2 md:flex-row justify-between p-2">
+                {currentStep > 1 && (
+                    <Button  variant="outline"  onClick={() => setCurrentStep(prev => prev - 1)} >
+                        <ArrowLeft className="mr-2 size-4" /> Previous
                     </Button>
-                </CardFooter>
-            </Card>
+                )}
+                <Button  onClick={handleNextStep} className={`ml-auto w-full md:w-auto ${currentStep === 1 ? '' : 'gap-2'}`}>
+                    {currentStep === 1 ? 'Next' : 'Save Transaction'}
+                    {currentStep === 1  ? <ArrowRight className="size-4" />  : <Save className="size-4" />}
+                </Button>
+            </div>
         </div>
     );
 };

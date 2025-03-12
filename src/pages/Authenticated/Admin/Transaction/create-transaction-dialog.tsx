@@ -18,8 +18,8 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({ default
 	return (
 		<div onClick={handleClick}>
 			{children ? children : (
-				<Button >
-					<PlusCircle className="size-4 inline mr-2" /> <span>New Transaction</span>
+				<Button className="flex gap-2" >
+					<PlusCircle className="size-4 inline" /> <span className="hidden md:inline">New Transaction</span>
 				</Button>
 			)}
 		</div>

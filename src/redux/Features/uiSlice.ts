@@ -12,7 +12,7 @@ interface UIstate {
     message: string
   },
   breadCrumb: BreadcrumbType[],
-  searchText:string,
+  searchText:string|null,
 }
 
 const initialState: UIstate = {
@@ -20,7 +20,7 @@ const initialState: UIstate = {
   breadCrumb: [
     { label: 'Dashboard', link: '/dashboard' }
   ],
-  searchText: '',
+  searchText: null,
 }
 
 export const uiSlice = createSlice({
@@ -32,7 +32,7 @@ export const uiSlice = createSlice({
     addBredcrumb: (state, action: PayloadAction<BreadcrumbType>) => ({ ...state, breadCrumb: [...state.breadCrumb, action.payload] }),
     removeBredcrumb: (state, action: PayloadAction<BreadcrumbType>) => ({ ...state, breadCrumb: state.breadCrumb.filter(b => b.link != action.payload.link) }),
     setBreadcrumb: (state, action: PayloadAction<BreadcrumbType[]>) => ({ ...state, breadCrumb: action.payload }),
-    setSearchText: (state, action: PayloadAction<string>) => {
+    setSearchText: (state, action: PayloadAction<string | null>) => {
       return {...state,searchText:action.payload}
     }
   },

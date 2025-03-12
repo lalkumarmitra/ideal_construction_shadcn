@@ -37,7 +37,11 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({children,default
     return (
         <Dialog open={productMutation.isPending || open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                {children ? children  : <Button><PlusCircle className="size-4 mr-2 inline" />{defaultProduct?'Update Product':'Add New Product'}</Button>}
+                {children ? children  : 
+                    <Button className="flex gap-2">
+                        <PlusCircle className="size-4 inline" />
+                        <span className="hidden md:inline">{defaultProduct?'Update Product':'Add New Product'}</span>
+                    </Button>}
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

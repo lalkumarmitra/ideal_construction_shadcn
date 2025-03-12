@@ -85,6 +85,14 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                     {columnsFilters?.unloading_price?.status === 'show' && (
                         <TableHead className="cursor-pointer select-none text-right">Unloading Price</TableHead>
                     )}
+
+                    {columnsFilters?.loading_driver?.status === 'show' && (
+                        <TableHead className="cursor-pointer select-none text-right">Driver <span className="text-blue-500">(LDG)</span></TableHead>
+                    )}
+                    {columnsFilters?.unloading_driver?.status === 'show' && (
+                        <TableHead className="cursor-pointer select-none text-right">Driver <span className="text-green-500">(UNL)</span></TableHead>
+                    )}
+
                     {columnsFilters?.status?.status === 'show' && (
                         <TableHead>Status</TableHead>
                     )}
@@ -261,6 +269,16 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                                 )}
                             </TableCell>
                         )}
+                        {columnsFilters?.loading_driver?.status === 'show' && (
+                            <TableCell className="text-right">
+                                <span className="text-muted-foreground text-sm">{transaction.loading_driver?.name || '-'}</span>
+                            </TableCell>
+                        )}
+                        {columnsFilters?.unloading_driver?.status === 'show' && (
+                            <TableCell className="text-right">
+                                <span className="text-muted-foreground text-sm">{transaction.un_loading_driver?.name || '-'}</span>
+                            </TableCell>
+                        )}
                         {columnsFilters?.status?.status === 'show' && (
                             <TableCell>
                                 <Badge variant={
@@ -327,7 +345,7 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort,columnsF
                                             <div className="space-y-1">
                                                 <p className="font-medium">Drivers</p>
                                                 <p className="text-xs">Loading: {transaction.loading_driver?.name || "N/A"}</p>
-                                                <p className="text-xs">Unloading: {transaction.unloading_driver?.name || "N/A"}</p>
+                                                <p className="text-xs">Unloading: {transaction.un_loading_driver?.name || "N/A"}</p>
                                             </div>
                                         </TooltipContent>
                                     </Tooltip>

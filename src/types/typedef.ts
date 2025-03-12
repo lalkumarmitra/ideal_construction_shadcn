@@ -51,7 +51,7 @@ export type TransactionType = {
     loading_driver_id?:string|number;
     unloading_driver_id?:string|number;
     loading_driver?:UserType;
-    unloading_driver?:UserType;
+    un_loading_driver?:UserType;
     product?:ProductType;
     loading_point?:ClientType;
     unloading_point?:ClientType;
