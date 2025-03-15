@@ -1,8 +1,20 @@
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { Button } from "../ui/button";
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
-export const ListPagination = ({ last_page, current_page, url_end_point }: { last_page: number, current_page: number, url_end_point: string }) => {
+export const ListPagination = ({ 
+    last_page, 
+    current_page, 
+    url_end_point,
+    onPageChange
+}: { 
+    last_page: number, 
+    current_page: number, 
+    url_end_point: string,
+    onPageChange?:(page:number)=>void
+}) => {
     const maxPagesToShow = 5; // Limit number of pages displayed at once
     const pageNumbers: (number | string)[] = [];
     const navigate = useNavigate();
@@ -25,18 +37,38 @@ export const ListPagination = ({ last_page, current_page, url_end_point }: { las
         else if (current_page >= last_page - 2) pageNumbers.push(1, "...", last_page - 3, last_page - 2, last_page - 1, last_page);
         else pageNumbers.push(1, "...", current_page - 1, current_page, current_page + 1, "...", last_page);
     }
+    const handleNavigatePrevious = () => {
+        if(onPageChange) onPageChange(current_page - 1);
+        else navigate(current_page > 1 ? `/${url_end_point}/${current_page - 1}/12` : `/${url_end_point}/${current_page}/12`);
+    };
+    const handleNavigateNext = () => {
+        if(onPageChange) onPageChange(current_page + 1);
+        else navigate(current_page < last_page ? `/${url_end_point}/${current_page + 1}/12` : `/${url_end_point}/${current_page}/12`);
+    };
+    const handleNavigateToPage = (page:number) => {
+        if(onPageChange) onPageChange(page);
+        else navigate(`/${url_end_point}/${page}/12`)
+    }
 
     return (
         <Pagination>
             <PaginationContent>
                 <PaginationItem className="cursor-pointer">
-                    <PaginationPrevious onClick={() => navigate(current_page > 1 ? `/${url_end_point}/${current_page - 1}/12` : `/${url_end_point}/${current_page}/12`)} />
+                    <PaginationPrevious 
+                        className="hidden md:flex" 
+                        onClick={handleNavigatePrevious} 
+                    />
+                    <Button 
+                        className="md:hidden" 
+                        variant={'link'}
+                        onClick={handleNavigatePrevious}
+                    ><ChevronsLeft className="size-4" /></Button>
                 </PaginationItem>
 
                 {pageNumbers.map((page, index) => (
                     <PaginationItem key={index} className="cursor-pointer">
                         {typeof page === "number" ? (
-                            <PaginationLink onClick={() => navigate(`/${url_end_point}/${page}/12`)} isActive={page === current_page}>
+                            <PaginationLink onClick={()=>handleNavigateToPage(page)} isActive={page === current_page}>
                                 {page}
                             </PaginationLink>
                         ) : (
@@ -45,7 +77,15 @@ export const ListPagination = ({ last_page, current_page, url_end_point }: { las
                     </PaginationItem>
                 ))}
                 <PaginationItem className="cursor-pointer">
-                    <PaginationNext onClick={() => navigate(current_page < last_page ? `/${url_end_point}/${current_page + 1}/12` : `/${url_end_point}/${current_page}/12`)} />
+                    <PaginationNext 
+                        className="hidden md:flex" 
+                        onClick={handleNavigateNext} 
+                    />
+                    <Button 
+                        className="md:hidden" 
+                        variant={'link'}
+                        onClick={handleNavigateNext}
+                    ><ChevronsRight className="size-4" /></Button>
                 </PaginationItem>
             </PaginationContent>
         </Pagination>

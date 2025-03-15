@@ -35,6 +35,7 @@ export const TransactionPagination = ({
                         <span className="sr-only">Go to previous page</span>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
+                    <span>{paginationData.page}</span>
                     <Button
                         variant="outline"
                         className="h-8 w-8 p-0"

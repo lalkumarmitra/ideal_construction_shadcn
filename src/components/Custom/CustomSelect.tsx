@@ -19,6 +19,7 @@ interface CustomSelectProps extends React.ComponentPropsWithoutRef<typeof Select
   id?: string;
   className?: string;
   searchable?: boolean;
+  dropdownClassName?:string;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -26,6 +27,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   placeholder = "Select An Option",
   id = "select",
   className,
+  dropdownClassName,
   searchable = false,
   ...props
 }) => {
@@ -41,7 +43,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       <SelectTrigger className={cn("w-full", className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className={dropdownClassName}>
         {searchable && (
           <div className="px-2 py-2">
             <input

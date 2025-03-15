@@ -7,7 +7,7 @@ import { transaction_apis } from "@/lib/helpers/api_urls";
 import TransactionHistoryFiltersSheet from "./transaction-history-filters-sheet";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, RefreshCw, TableProperties } from "lucide-react";
+import { DownloadCloud, FileSpreadsheet, FileTextIcon, Loader2, RefreshCw, TableProperties } from "lucide-react";
 
 import { TransactionHistoryTableSkeleton } from "./transaction-table-skeleton";
 import { TransactionPagination } from "./transaction-pagination";
@@ -22,47 +22,55 @@ import { CheckedState } from "@radix-ui/react-checkbox";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { CustomSelect } from "@/components/Custom/CustomSelect";
 
 
 const TransactionHistoryPage = () => {
     const dispatch = useAppDispatch();
     const searchText = useAppSelector(state => state.ui.searchText);
     const debouncedSearchText = useDebounce(searchText, 500);
-    const [paginationData, setPaginationData] = useState<{page: number, offset: number}>({page: 1, offset: 7});
-    const [selectedColumns,setSelectedColumns] = useState<ColumnFilterType|null>(null);
+    const [paginationData, setPaginationData] = useState<{page: number, offset: number}>(()=>{
+        const paginationPreference = localStorage.getItem('transaction_pagination_preference');
+        return paginationPreference ? JSON.parse(paginationPreference) : { page: 1, offset: 7 };
+    });
+    const [selectedColumns,setSelectedColumns] = useState<ColumnFilterType|null>(()=>{
+        const columnsPreference = localStorage.getItem('transaction_table_columns');
+        return columnsPreference ? JSON.parse(columnsPreference) : TRANSACTION_TABLE_COLUMNS.reduce((acc, tc) => {
+            acc[tc] = { status: 'show', iconise: false };
+            return acc;
+        }, {} as ColumnFilterType);
+    });
     const [filterFormData, setFilterFormData] = useState<FormData | null>(null);
     const [sortConfig, setSortConfig] = useState<{field: SortField, order: SortOrder}>({
         field: 'loading_date',
         order: 'desc'
     });
-
-    // Initialize default form data
+    
+    useEffect(() => {dispatch(setBreadcrumb([{ label: 'Dashboard', link: '/dashboard' },{ label: 'Transaction History', type: 'page' }]));}, []);
     useEffect(() => {
         const formData = new FormData();
-        formData.append('start_date', '');
-        formData.append('end_date', '');
         setFilterFormData(formData);
     }, []);
 
     // Update search in filter form data
     useEffect(() => {
         if (!filterFormData) return;
-        
         const newFilterFormData = new FormData();
         // Preserve existing filter values
-        for (const [key, value] of filterFormData.entries()) {
+        for (const [key, value] of filterFormData.entries()) 
             newFilterFormData.append(key, value as string);
-        }
-        
+
         // Update search value
-        if (debouncedSearchText) {
-            newFilterFormData.set('search', debouncedSearchText);
-        } else {
-            newFilterFormData.delete('search');
-        }
+        if (debouncedSearchText) newFilterFormData.set('search', debouncedSearchText);
+        else newFilterFormData.delete('search');
+        
+        // Add sorting parameters
+        newFilterFormData.set('sort_field', sortConfig.field);
+        newFilterFormData.set('sort_order', sortConfig.order);
         
         setFilterFormData(newFilterFormData);
-    }, [debouncedSearchText]);
+    }, [debouncedSearchText, sortConfig]); // Add sortConfig to dependencies
 
     // Query with filters
     const transactionHistoryQuery = useQuery<any, any, TransactionQueryResponseType>({
@@ -74,54 +82,7 @@ const TransactionHistoryPage = () => {
             search: debouncedSearchText
         }],
         queryFn: () => transaction_apis.search(filterFormData, paginationData.page, paginationData.offset),
-        select: (res) => {
-            // In a real application, sorting would be handled by the backend
-            // This is just a client-side simulation for demonstration purposes
-            const sortedTransactions = [...res.data.transactions].sort((a, b) => {
-                let aValue, bValue;
-                
-                switch(sortConfig.field) {
-                    case 'id':
-                        aValue = a.id;
-                        bValue = b.id;
-                        break;
-                    case 'loading_date':
-                        aValue = new Date(a.loading_date).getTime();
-                        bValue = new Date(b.loading_date).getTime();
-                        break;
-                    case 'unloading_date':
-                        aValue = a.unloading_date ? new Date(a.unloading_date).getTime() : 0;
-                        bValue = b.unloading_date ? new Date(b.unloading_date).getTime() : 0;
-                        break;
-                    case 'product_name':
-                        aValue = a.product?.name || '';
-                        bValue = b.product?.name || '';
-                        break;
-                    case 'loading_quantity':
-                        aValue = parseFloat(a.loading_quantity);
-                        bValue = parseFloat(b.loading_quantity);
-                        break;
-                    case 'unloading_quantity':
-                        aValue = parseFloat(a.unloading_quantity || '0');
-                        bValue = parseFloat(b.unloading_quantity || '0');
-                        break;
-                    default:
-                        aValue = a.id;
-                        bValue = b.id;
-                }
-                
-                if (sortConfig.order === 'asc') {
-                    return aValue > bValue ? 1 : -1;
-                } else {
-                    return aValue < bValue ? 1 : -1;
-                }
-            });
-            
-            return {
-                ...res.data,
-                transactions: sortedTransactions
-            };
-        },
+        select: (res) => res.data,
         staleTime: 10 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
         enabled: !!filterFormData,
@@ -156,9 +117,12 @@ const TransactionHistoryPage = () => {
     // Handle filter updates
     const handleFilterUpdate = (newFilterData: FormData) => {
         // Preserve search value when filters are updated
-        if (debouncedSearchText) {
-            newFilterData.set('search', debouncedSearchText);
-        }
+        if (debouncedSearchText) newFilterData.set('search', debouncedSearchText);
+        
+        // Preserve sorting
+        newFilterData.set('sort_field', sortConfig.field);
+        newFilterData.set('sort_order', sortConfig.order);
+        
         setFilterFormData(newFilterData);
         setPaginationData(prev => ({ ...prev, page: 1 })); // Reset to first page when filters change
     };
@@ -173,41 +137,27 @@ const TransactionHistoryPage = () => {
 
     // Handle pagination change
     const handlePageChange = (newPage: number) => {
+        localStorage.setItem('transaction_pagination_preference', JSON.stringify({ page: newPage, offset: paginationData.offset }));
         setPaginationData(prev => ({
             ...prev,
             page: newPage
         }));
     };
 
-    useEffect(() => {
-        dispatch(setBreadcrumb([
-            { label: 'Dashboard', link: '/dashboard' },
-            { label: 'Transaction History', type: 'page' }
-        ]));
-    }, []);
-    useEffect(() => { 
-        const preference = localStorage.getItem('transaction_table_columns');
-        if(preference) setSelectedColumns(JSON.parse(preference));
-        else setSelectedColumns((_prev) => 
-            TRANSACTION_TABLE_COLUMNS.reduce((acc, tc) => {
-                acc[tc] = { status: 'show', iconise: false };
-                return acc;
-            }, {} as ColumnFilterType)
-        );
-    },[]);
-    useEffect(()=>{
-        if(selectedColumns){
-            localStorage.setItem('transaction_table_columns',JSON.stringify(selectedColumns));
-        }
-    },[selectedColumns]);
+    
     const handleCheckChange = (e: CheckedState, tc: string) => {
-        setSelectedColumns((prev)=>({
-            ...prev,
-            [tc]:{
-                status:e ? 'show' : 'hide',
-                iconise: false
-            }
-        }))
+        setSelectedColumns((prev) => {
+            if (!prev) return prev;
+            const newColumns: ColumnFilterType = {
+                ...prev,
+                [tc]: {
+                    status: e ? 'show' : 'hide',
+                    iconise: false
+                }
+            };
+            localStorage.setItem('transaction_table_columns', JSON.stringify(newColumns));
+            return newColumns;
+        });
     }
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4">
@@ -226,7 +176,7 @@ const TransactionHistoryPage = () => {
                                 Columns
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="">
+                        <PopoverContent className="bg-background/30 backdrop-blur-sm">
                             <div className="grid gap-4 ">
                                 <div className="space-y-2">
                                     <h4 className="font-medium leading-none">Select Columns</h4>
@@ -244,43 +194,67 @@ const TransactionHistoryPage = () => {
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Button variant="outline" size="sm" className="flex" onClick={handleExport}>
-                        {downloading?(<>
-                            <Loader2 className="inline mr-2 animate-spin size-4" />
-                            Downloading ....
-                        </>):(<>
-                            <Download className="mr-2 h-4 w-4" />
-                            Export
-                        </>)}
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="flex" onClick={handleExport}>
+                                {downloading?(<>
+                                    <Loader2 className="inline mr-2 animate-spin size-4" />
+                                    Downloading ....
+                                </>):(<>
+                                    <DownloadCloud className="mr-2 h-4 w-4" />
+                                    Export
+                                </>)}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-background/20 backdrop-blur-sm">
+                            <DropdownMenuItem className="cursor-pointer" onClick={handleExport}>
+                                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                <span>Excel</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" onClick={handleExport}>
+                                <FileTextIcon className="mr-2 h-4 w-4" />
+                                <span>Pdf</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <TransactionHistoryFiltersSheet onFilterUpdate={handleFilterUpdate} />
+                </div>
+            </div>
+            <div className="flex gap-2 justify-between">
+                <div className="flex gap-2">
+                    <CustomSelect 
+                        className="w-44"
+                        dropdownClassName="bg-background/40 backdrop-blur-sm"
+                        onValueChange={v=>setPaginationData((_prev)=>({page:1,offset:Number(v)}))}
+                        value={paginationData.offset.toString()}
+                        options={Array.from([7,10,20,30,40,50,60]).map(i=>({label:`${i} per page`,value:i}))}
+                    />
                     <Button onClick={()=>transactionHistoryQuery.refetch()} variant="outline" size="icon">
                         <RefreshCw className={(transactionHistoryQuery.isLoading || transactionHistoryQuery.isRefetching)?"animate-spin size-4": "size-4"} />
                     </Button>
                 </div>
             </div>
-
             <Card className="overflow-hidden border-border/40">
-                <CardContent className="p-0">
+                <CardContent className="p-0 flex flex-col">
                     {(transactionHistoryQuery.isLoading || transactionHistoryQuery.isRefetching) ? (
                         <TransactionHistoryTableSkeleton />
                     ) : transactionHistoryQuery.data?.transactions?.length ? (
                         <>
-                            <div className="overflow-x-auto">
-                                <TransactionTable 
-                                    transactions={transactionHistoryQuery.data.transactions}
-                                    sortConfig={sortConfig}
-                                    handleSort={handleSort}
-                                    columnsFilters={selectedColumns}
-                                />
-                            </div>
+                            <TransactionTable 
+                                transactions={transactionHistoryQuery.data.transactions}
+                                sortConfig={sortConfig}
+                                handleSort={handleSort}
+                                columnsFilters={selectedColumns}
+                            />
                             {(transactionHistoryQuery.data?.last_page || 0) > 1 && (
-                                <TransactionPagination
-                                    paginationData={paginationData}
-                                    lastPage={transactionHistoryQuery.data.last_page}
-                                    total={transactionHistoryQuery.data.total}
-                                    onPageChange={handlePageChange}
-                                />
+                                <div className="border-t">
+                                    <TransactionPagination
+                                        paginationData={paginationData}
+                                        lastPage={transactionHistoryQuery.data.last_page}
+                                        total={transactionHistoryQuery.data.total}
+                                        onPageChange={handlePageChange}
+                                    />
+                                </div>
                             )}
                         </>
                     ) : (

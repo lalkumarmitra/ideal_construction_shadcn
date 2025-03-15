@@ -1,7 +1,7 @@
 // transaction-types.ts
 import { TransactionType } from "@/types/typedef";
 
-export type SortField = 'id' | 'loading_date' | 'unloading_date' | 'product_name' | 'loading_quantity' | 'unloading_quantity';
+export type SortField = 'id' | 'loading_date' | 'unloading_date' | 'product_name' | 'loading_quantity' | 'unloading_quantity'|'transport_expense';
 export type SortOrder = 'asc' | 'desc';
 
 export type TransactionQueryResponseType = {

@@ -34,7 +34,7 @@ const TableActionOptions: React.FC<{transaction:TransactionType}> = ({transactio
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-background/20 backdrop-blur-sm">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem className="cursor-pointer" onClick={()=>{
                     setOpen(false);
