@@ -47,30 +47,27 @@ const TransactionHistoryPage = () => {
         order: 'desc'
     });
     
-    useEffect(() => {dispatch(setBreadcrumb([{ label: 'Dashboard', link: '/dashboard' },{ label: 'Transaction History', type: 'page' }]));}, []);
     useEffect(() => {
         const formData = new FormData();
         setFilterFormData(formData);
+        dispatch(setBreadcrumb([
+            { label: 'Dashboard', link: '/dashboard' },
+            { label: 'Transaction History', type: 'page' }
+        ]));
     }, []);
 
     // Update search in filter form data
     useEffect(() => {
         if (!filterFormData) return;
         const newFilterFormData = new FormData();
-        // Preserve existing filter values
         for (const [key, value] of filterFormData.entries()) 
             newFilterFormData.append(key, value as string);
-
-        // Update search value
         if (debouncedSearchText) newFilterFormData.set('search', debouncedSearchText);
         else newFilterFormData.delete('search');
-        
-        // Add sorting parameters
         newFilterFormData.set('sort_field', sortConfig.field);
         newFilterFormData.set('sort_order', sortConfig.order);
-        
         setFilterFormData(newFilterFormData);
-    }, [debouncedSearchText, sortConfig]); // Add sortConfig to dependencies
+    }, [debouncedSearchText, sortConfig]); 
 
     // Query with filters
     const transactionHistoryQuery = useQuery<any, any, TransactionQueryResponseType>({
@@ -100,7 +97,7 @@ const TransactionHistoryPage = () => {
         },
         onError: (error) => toast.error("Download failed "+ error),
     });
-    const handleExport = () => {
+    const handleExportExcel = () => {
         if (!selectedColumns) return;
         const newFilterFormData = new FormData();
         if (filterFormData) {
@@ -114,17 +111,16 @@ const TransactionHistoryPage = () => {
         });
         download(newFilterFormData);
     };
+    const handleExportPdf = () => {
+        toast.info('This action is not included in the this version, Please Contanct Admin for more details');
+    }
     // Handle filter updates
     const handleFilterUpdate = (newFilterData: FormData) => {
-        // Preserve search value when filters are updated
         if (debouncedSearchText) newFilterData.set('search', debouncedSearchText);
-        
-        // Preserve sorting
         newFilterData.set('sort_field', sortConfig.field);
         newFilterData.set('sort_order', sortConfig.order);
-        
         setFilterFormData(newFilterData);
-        setPaginationData(prev => ({ ...prev, page: 1 })); // Reset to first page when filters change
+        setPaginationData(prev => ({ ...prev, page: 1 })); 
     };
 
     // Handle sorting
@@ -196,7 +192,7 @@ const TransactionHistoryPage = () => {
                     </Popover>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="flex" onClick={handleExport}>
+                            <Button variant="outline" size="sm" className="flex">
                                 {downloading?(<>
                                     <Loader2 className="inline mr-2 animate-spin size-4" />
                                     Downloading ....
@@ -207,11 +203,11 @@ const TransactionHistoryPage = () => {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-background/20 backdrop-blur-sm">
-                            <DropdownMenuItem className="cursor-pointer" onClick={handleExport}>
+                            <DropdownMenuItem className="cursor-pointer" onClick={handleExportExcel}>
                                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                                 <span>Excel</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer" onClick={handleExport}>
+                            <DropdownMenuItem className="cursor-pointer" onClick={handleExportPdf}>
                                 <FileTextIcon className="mr-2 h-4 w-4" />
                                 <span>Pdf</span>
                             </DropdownMenuItem>

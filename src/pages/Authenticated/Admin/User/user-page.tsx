@@ -69,19 +69,21 @@ const UserPage = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Users</h1>
                 <div className="flex gap-2">
                     <CreateUserDialog />
+                </div>
+            </div>
+            <div className="flex gap-2 px-6 justify-between flex-wrap">
+                <div className="flex gap-2">
+                    <CustomSelect 
+                        className="w-44"
+                        dropdownClassName="bg-background/40 backdrop-blur-sm"
+                        onValueChange={v=>setPageSize(v)}
+                        defaultValue={pageSize}
+                        options={Array.from([10,20,30,40,50,60,70,80,90,100]).map(i=>({label:`${i} per page`,value:i}))}
+                    />
                     <Button onClick={()=>userListQuery.refetch()} variant="outline" size="icon">
                         <RefreshCw className={(userListQuery.isLoading || userListQuery.isRefetching)?"animate-spin size-4": "size-4"} />
                     </Button>
                 </div>
-            </div>
-            <div className="flex gap-2 px-6 justify-between">
-                <CustomSelect 
-                    className="w-44"
-                    dropdownClassName="bg-background/40 backdrop-blur-sm"
-                    onValueChange={v=>setPageSize(v)}
-                    defaultValue={pageSize}
-                    options={Array.from([10,20,30,40,50,60,70,80,90,100]).map(i=>({label:`${i} per page`,value:i}))}
-                />
                 <CustomSelect 
                         className="w-48"
                         dropdownClassName="bg-background/40 backdrop-blur-sm"
