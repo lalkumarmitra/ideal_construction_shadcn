@@ -46,9 +46,9 @@ const QuantityDiscrepancies: React.FC<QuantityDiscrepanciesProps> = ({ discrepan
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-amber-600">+{item.difference.toFixed(2)}</p>
+                  <p className="font-bold text-amber-600">+{item?.difference}</p>
                   <p className="text-sm text-gray-500">
-                    {item.unloading_quantity.toFixed(2)} unloaded
+                    {item?.unloading_quantity} unloaded
                   </p>
                 </div>
               </div>
