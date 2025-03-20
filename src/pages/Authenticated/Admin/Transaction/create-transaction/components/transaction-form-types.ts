@@ -21,6 +21,7 @@ export interface TransactionFormStep2Data {
     unloading_rate?: string;
     unloading_quantity?: string;
     transport_expense?: string;
+    unit:string;
 }
 
 export interface TransactionFormData extends TransactionFormStep1Data, TransactionFormStep2Data {

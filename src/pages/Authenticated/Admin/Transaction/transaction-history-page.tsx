@@ -80,8 +80,8 @@ const TransactionHistoryPage = () => {
         }],
         queryFn: () => transaction_apis.search(filterFormData, paginationData.page, paginationData.offset),
         select: (res) => res.data,
-        staleTime: 10 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
+        staleTime: 10 * 60 * 60 * 1000,
+        gcTime: 10 * 60 * 60 * 1000,
         enabled: !!filterFormData,
     });
     const { mutate:download, isPending:downloading } = useMutation({
@@ -221,7 +221,10 @@ const TransactionHistoryPage = () => {
                     <CustomSelect 
                         className="w-44"
                         dropdownClassName="bg-background/40 backdrop-blur-sm"
-                        onValueChange={v=>setPaginationData((_prev)=>({page:1,offset:Number(v)}))}
+                        onValueChange={v=>{
+                            localStorage.setItem('transaction_pagination_preference', JSON.stringify({ page: 1, offset: Number(v) }));
+                            setPaginationData((_prev)=>({page:1,offset:Number(v)}))
+                        }}
                         value={paginationData.offset.toString()}
                         options={Array.from([7,10,20,30,40,50,60]).map(i=>({label:`${i} per page`,value:i}))}
                     />

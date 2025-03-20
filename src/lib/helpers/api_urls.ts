@@ -7,6 +7,10 @@ export const auth = {
     login:(data:FormData) => post('/login',data),
 }
 
+export const dashboard_apis = {
+    getData:(interval:FormData)=>post(`/dashboard-analytics`,interval),
+}
+
 export const role_apis = {
     create:(formData:FormData)=>post('/new-role',formData),
     update: (data:FormData,id:string|number)=>post(`/update-role/${id}`,data),

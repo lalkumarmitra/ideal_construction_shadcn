@@ -34,7 +34,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({  defaultTransaction, 
     };
 
     const validateStep2 = () => {
-        const requiredFields = [ 'unloading_date',  'unloading_vehicle_id',  'unloading_point_id' ] as const;
+        const requiredFields = [ 'unloading_date',  'unloading_vehicle_id',  'unloading_point_id', 'unit' ] as const;
         const missingFields = requiredFields.filter(field => formData[field] === undefined || formData[field] === '');
         if (missingFields.length > 0) {
             toast.error(`Please fill in the following required fields: ${missingFields.map(m=>m.replace(/_/g, ' ').toUpperCase()).join(', ')}`);

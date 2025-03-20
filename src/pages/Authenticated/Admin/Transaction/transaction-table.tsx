@@ -7,12 +7,13 @@ import { AssetUrl } from "@/lib/helpers/api_helper";
 import { ColumnFilterType, SortConfigType, SortField } from "./transaction-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowDown, ArrowUp, CalendarIcon, Truck, IndianRupee, UserCog2 } from "lucide-react";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { CalendarIcon, Truck, IndianRupee, UserCog2 } from "lucide-react";
 import TableActionOptions from "./table-action-options";
+import TableHeaderComponent from "./TableComponents/table-header";
 
 // Add these styles at the top of your file or in a separate CSS file
-const styles = {
+export const styles = {
     tableWrapper: "relative max-h-[calc(100vh-300px)] overflow-y-auto", // Added max-height and overflow-y
     table: "w-full",
     stickyHeader: "sticky top-0 bg-background z-20", // Added for sticky header
@@ -28,102 +29,11 @@ type TransactionTableProps = {
 }
 
 export const TransactionTable = ({ transactions, sortConfig, handleSort, columnsFilters }: TransactionTableProps) => {
-    // Render sort indicator
-    const renderSortIndicator = (field: SortField) => {
-        if (sortConfig.field !== field) {
-            return null;
-        }
-        return sortConfig.order === 'asc' ? 
-            <ArrowUp className="ml-1 h-4 w-4 inline" /> : 
-            <ArrowDown className="ml-1 h-4 w-4 inline" />;
-    };
-
+    
     return (
         <div className={styles.tableWrapper}>
             <Table className={styles.table}>
-                <TableHeader className={cn("bg-muted/50", styles.stickyHeader)}>
-                    <TableRow className="whitespace-nowrap">
-                        {columnsFilters?.transaction_id?.status === 'show' && (
-                            <TableHead className="w-[100px] cursor-pointer select-none" onClick={() => handleSort('id')}>
-                                ID {renderSortIndicator('id')}
-                            </TableHead>
-                        )}
-                        {columnsFilters?.loading_date?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort('loading_date')}>
-                                Loading Date {renderSortIndicator('loading_date')}
-                            </TableHead>
-                        )}
-                        {columnsFilters?.unloading_date?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort('unloading_date')}>
-                                Unloading Date {renderSortIndicator('unloading_date')}
-                            </TableHead>
-                        )}
-                        {columnsFilters?.product?.status === 'show' && (
-                            <TableHead className="select-none" >
-                                Product 
-                            </TableHead>
-                        )}
-                        {columnsFilters?.loading_point?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none">Loading Point</TableHead>
-                        )}
-                        {columnsFilters?.unloading_point?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none">Unloading Point</TableHead>
-                        )}
-                        {columnsFilters?.loading_rate?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right">
-                                Loading Rate
-                            </TableHead>
-                        )}
-                        {columnsFilters?.loading_quantity?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('loading_quantity')}>
-                                Loading Qty {renderSortIndicator('loading_quantity')}
-                            </TableHead>
-                        )}
-                        {columnsFilters?.unloading_rate?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right">
-                                Unloading Rate
-                            </TableHead>
-                        )}
-                        {columnsFilters?.unloading_quantity?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('unloading_quantity')}>
-                                Unloading Qty {renderSortIndicator('unloading_quantity')}
-                            </TableHead>
-                        )}
-                        {columnsFilters?.loading_price?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right">Loading Price</TableHead>
-                        )}
-                        {columnsFilters?.unloading_price?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right">Unloading Price</TableHead>
-                        )}
-
-                        {columnsFilters?.loading_driver?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right">Driver <span className="text-blue-500">(LDG)</span></TableHead>
-                        )}
-                        {columnsFilters?.unloading_driver?.status === 'show' && (
-                            <TableHead className="cursor-pointer select-none text-right">Driver <span className="text-green-500">(UNL)</span></TableHead>
-                        )}
-
-                        {columnsFilters?.status?.status === 'show' && (
-                            <TableHead>Status</TableHead>
-                        )}
-                        {(columnsFilters?.vehicle?.status === 'show') && (
-                            <TableHead className="w-[100px] text-right">Vehicle</TableHead>
-                        )}
-                        {columnsFilters?.do_number?.status === 'show' && (
-                            <TableHead className="w-[100px] text-right">Do Number</TableHead>
-                        )}
-                        {columnsFilters?.challan_number?.status === 'show' && (
-                            <TableHead className="w-[100px] text-right">Challan Number</TableHead>
-                        )}
-                        {columnsFilters?.transport_expense?.status === 'show' && (
-                            <TableHead className="w-[100px] text-right cursor-pointer" onClick={() => handleSort('transport_expense')}>Expense {renderSortIndicator('unloading_quantity')}</TableHead>
-                        )}
-                        <TableHead className="w-[100px] text-right">Info</TableHead>
-                        <TableHead className={cn("text-right", styles.stickyColumnHeader)}>
-                            More
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
+                <TableHeaderComponent sortConfig={sortConfig} handleSort={handleSort} columnsFilters={columnsFilters} />
                 <TableBody>
                     {transactions.map((transaction, i) => (
                         <TableRow key={transaction.id} className={cn("group whitespace-nowrap", i % 2 === 0 ? "" : "bg-muted/50")}>
@@ -240,8 +150,8 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort, columns
                             )}
                             {columnsFilters?.loading_quantity?.status === 'show' && (
                                 <TableCell className="text-right">
-                                    <span className="font-medium">{parseFloat(transaction.loading_quantity).toFixed(2)}</span>
-                                    <span className="text-muted-foreground text-xs ml-1">{transaction.product?.unit}</span>
+                                    <span className="font-medium">{parseFloat(transaction.loading_quantity)}</span>
+                                    <span className="text-muted-foreground text-xs ml-1 uppercase">{transaction.unit}</span>
                                 </TableCell>
                             )}
                             {columnsFilters?.unloading_rate?.status === 'show' && (
@@ -253,8 +163,8 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort, columns
                                 <TableCell className="text-right">
                                     {transaction.unloading_quantity ? (
                                         <>
-                                            <span className="font-medium">{parseFloat(transaction.unloading_quantity).toFixed(2)}</span>
-                                            <span className="text-muted-foreground text-xs ml-1">{transaction.product?.unit}</span>
+                                            <span className="font-medium">{parseFloat(transaction.unloading_quantity)}</span>
+                                            <span className="text-muted-foreground text-xs ml-1 uppercase">{transaction.unit}</span>
                                         </>
                                     ) : (
                                         <span className="text-muted-foreground text-sm">-</span>

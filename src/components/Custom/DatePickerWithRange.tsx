@@ -18,9 +18,10 @@ interface DatePickerWithRangeProps extends React.HTMLAttributes<HTMLDivElement> 
 	defaultDate?:DateRange | undefined;
 	placeholder?:string;
 	name?:string
+	isModal?:boolean
 }
 
-const DatePickerWithRange: React.FC<DatePickerWithRangeProps>=({ onDateChange=()=>null,className,disabled=false,defaultDate,placeholder="Pick a date",name="date"}) => {
+const DatePickerWithRange: React.FC<DatePickerWithRangeProps>=({ onDateChange=()=>null,className,disabled=false,defaultDate,placeholder="Pick a date",name="date",isModal=true}) => {
 	const [date, setDate] = React.useState<DateRange | undefined>(defaultDate)
 	const handleDateSelect: SelectRangeEventHandler = (e: DateRange | undefined) => {
 		if (e) setDate(e);
@@ -30,7 +31,7 @@ const DatePickerWithRange: React.FC<DatePickerWithRangeProps>=({ onDateChange=()
 		<div className={cn("grid gap-2", className)}>
 			<input type="hidden" name={name+'_from'} value={date?.from?format(date?.from,'yyyy-MM-dd'):''} />
 			<input type="hidden" name={name+'_to'} value={date?.to?format(date?.to,'yyyy-MM-dd'):''} />
-			<Popover modal={true}>
+			<Popover modal={isModal} >
 				<PopoverTrigger asChild>
 					<Button disabled={disabled} id="date" variant={"outline"} className={cn( "w-full justify-start text-left font-normal", !date && "text-muted-foreground")} >
 						<CalendarIcon />

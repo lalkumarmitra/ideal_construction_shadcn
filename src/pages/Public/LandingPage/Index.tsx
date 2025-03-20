@@ -5,7 +5,7 @@ import hero from "@/assets/Gemini_Generated_Image_jvlhfejvlhfejvlh.jpeg";
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-[calc(100vh_-_4rem)] bg-background">
+    <div className="min-h-[calc(100svh-7rem)] bg-background">
       {/* Hero Section */}
       <section className="relative py-16 sm:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

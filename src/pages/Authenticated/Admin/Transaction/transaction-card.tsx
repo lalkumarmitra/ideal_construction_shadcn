@@ -72,7 +72,7 @@ export function TransactionCard({ transaction }: { transaction: TransactionType 
                             </div>
                             <div className="flex items-center text-sm mt-1">
                                 <PackageIcon className="mr-2 h-4 w-4" />
-                                <span className="font-semibold">{transaction.loading_quantity} {transaction.product?.unit}</span>
+                                <span className="font-semibold uppercase">{transaction.loading_quantity} {transaction.unit}</span>
                             </div>
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
@@ -110,7 +110,7 @@ export function TransactionCard({ transaction }: { transaction: TransactionType 
                                     </div>
                                     <div className="flex items-center text-sm mt-1">
                                         <PackageIcon className="mr-2 h-4 w-4" />
-                                        <span className="font-semibold">{transaction.unloading_quantity} {transaction.product?.unit}</span>
+                                        <span className="font-semibold uppercase">{transaction.unloading_quantity} {transaction.unit}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center text-sm text-muted-foreground">

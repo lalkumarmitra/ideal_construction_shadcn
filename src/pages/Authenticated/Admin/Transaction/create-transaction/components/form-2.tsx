@@ -18,6 +18,7 @@ import { vehicle_apis, user_apis, client_apis } from "@/lib/helpers/api_urls";
 import { StepProps } from './transaction-form-types';
 import { UserType } from '@/types/user';
 import { ClientType, VehicleType } from '@/types/typedef';
+import { CustomSelect } from '@/components/Custom/CustomSelect';
 
 
 const TransactionFormStep2: React.FC<StepProps> = ({ formData, updateFormData, defaultTransaction }) => {
@@ -41,6 +42,7 @@ const TransactionFormStep2: React.FC<StepProps> = ({ formData, updateFormData, d
         if(!formData.unloading_date) updateFormData({unloading_date: formData.loading_date})
         if(!formData.unloading_vehicle_id) updateFormData({unloading_vehicle_id: formData.loading_vehicle_id})
         if(!formData.unloading_driver_id) updateFormData({unloading_driver_id: formData.loading_driver_id})
+        if(!formData.unit) updateFormData({unit: 'mt'})
     },[formData]);
     return (
         <Card className="w-full">
@@ -142,33 +144,49 @@ const TransactionFormStep2: React.FC<StepProps> = ({ formData, updateFormData, d
                     </div>
 
                     {/* Unloading Rate (Optional) */}
-                    <div className="grid gap-2">
-                        <Label htmlFor="unloading_rate">
-                            <WeightIcon className="size-4 inline mr-2" /> Unloading Rate
-                        </Label>
-                        <Input 
-                            id="unloading_rate"
-                            type="number"
-                            step="0.01"
-                            placeholder="Unloading Rate"
-                            value={formData.unloading_rate || defaultTransaction?.unloading_rate || ''}
-                            onChange={(e) => updateFormData({ unloading_rate: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Unloading Quantity (Optional) */}
-                    <div className="grid gap-2">
-                        <Label htmlFor="unloading_quantity">
-                            <ScaleIcon className="size-4 inline mr-2" /> Unloading Quantity (Optional)
-                        </Label>
-                        <Input 
-                            id="unloading_quantity"
-                            type="number"
-                            step="0.001"
-                            placeholder="Unloading Quantity"
-                            value={formData.unloading_quantity || defaultTransaction?.unloading_quantity || ''}
-                            onChange={(e) => updateFormData({ unloading_quantity: e.target.value })}
-                        />
+                    <div className="grid gap-2 grid-cols-6 col-span-2">
+                        
+                        <div className="grid gap-2 col-span-1">
+                            <Label htmlFor="unloading_rate">
+                                <WeightIcon className="size-4 inline mr-2" /> Unloading Rate
+                            </Label>
+                            <Input 
+                                id="unloading_rate"
+                                type="number"
+                                step="0.01"
+                                placeholder="Unloading Rate"
+                                value={formData.unloading_rate || defaultTransaction?.unloading_rate || ''}
+                                onChange={(e) => updateFormData({ unloading_rate: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid gap-2 col-span-3">
+                            <Label htmlFor="unloading_quantity">
+                                <ScaleIcon className="size-4 inline mr-2" /> Unloading Quantity (Optional)
+                            </Label>
+                            <Input 
+                                id="unloading_quantity"
+                                type="number"
+                                step="0.001"
+                                placeholder="Unloading Quantity"
+                                value={formData.unloading_quantity || defaultTransaction?.unloading_quantity || ''}
+                                onChange={(e) => updateFormData({ unloading_quantity: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid gap-2 col-span-2">
+                            <Label htmlFor="unloading_quantity">Unit</Label>
+                            <CustomSelect 
+                                options={[
+                                    {label:'TON',value:'ton'},
+                                    {label:'MT',value:'mt'},
+                                    {label:'CFT',value:'cft'},
+                                    {label:'KG',value:'kg'},
+                                    {label:'OTHER',value:'other'}
+                                ]}
+                                name="unit"
+                                defaultValue={formData.unit || defaultTransaction?.unit || 'mt'}
+                                onValueChange={(e)=>updateFormData({unit:e})}
+                            />
+                        </div>
                     </div>
                 </div>
             </CardContent>

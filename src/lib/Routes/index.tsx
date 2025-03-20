@@ -19,6 +19,7 @@ import CreateTransactionPage from '@/pages/Authenticated/Admin/Transaction/creat
 
 
 
+
 export const routes: RouteType[] = [
 	{
 		isMenu: false,

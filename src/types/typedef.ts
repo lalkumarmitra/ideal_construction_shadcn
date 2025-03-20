@@ -32,6 +32,7 @@ export type ClientType = {
 export type TransactionType = {
     id:number;
     product_id:number;
+    unit:string;
     loading_point_id:number;
     loading_vehicle_id:number;
     loading_date:string;
@@ -45,7 +46,7 @@ export type TransactionType = {
     challan:string|null;
     challan_number: string|null;
     do_number:string|null;
-    txn_type:string,
+    txn_type:string;
     is_sold:string;
     transport_expense?:string|number;
     loading_driver_id?:string|number;
@@ -57,4 +58,19 @@ export type TransactionType = {
     unloading_point?:ClientType;
     loading_vehicle?:VehicleType;
     unloading_vehicle?:VehicleType;
+}
+
+export interface TransactionRouteType {
+    loading_point: string;
+    unloading_point: string;
+    transaction_count: number;
+
+    total_quantity?:number;
+    average_quantity?:number
+    
+    average_expense?: number;
+    total_expense?: number;
+
+    total_value?:number;
+    average_value?:number;
 }
