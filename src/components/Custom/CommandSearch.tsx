@@ -6,7 +6,7 @@ import { client_apis, product_apis, user_apis, vehicle_apis } from "@/lib/helper
 import { UserType } from "@/types/user"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Separator } from "../ui/separator"
-import { Search } from "lucide-react"
+import { Handshake, Search, ShoppingBasket, Truck, Users } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { Avatar, AvatarFallback } from "../ui/avatar"
 import { AvatarImage } from "@radix-ui/react-avatar"
@@ -142,18 +142,9 @@ export function CommandDialogDemo() {
     }, [debouncedSearchQuery, vehicleListQuery.data, searchVehiclesQuery.data]);
 
     // Check if any search is in progress
-    const isSearching = searchUsersQuery.isLoading || 
-                       searchClientsQuery.isLoading || 
-                       searchProductsQuery.isLoading || 
-                       searchVehiclesQuery.isLoading;
-
+    const isSearching = searchUsersQuery.isLoading || searchClientsQuery.isLoading || searchProductsQuery.isLoading || searchVehiclesQuery.isLoading;
     // Check if we have no results across all categories
-    const hasNoResults = debouncedSearchQuery && 
-                       !isSearching && 
-                       displayUsers.length === 0 && 
-                       displayClients.length === 0 && 
-                       displayProducts.length === 0 && 
-                       displayVehicles.length === 0;
+    const hasNoResults = debouncedSearchQuery && !isSearching && displayUsers.length === 0 && displayClients.length === 0 && displayProducts.length === 0 && displayVehicles.length === 0;
     
     const navigate = useNavigate();
     const handleNavigateToProfile = (id:string|number) => navigate(`/users/profile/${id}`)
@@ -167,7 +158,7 @@ export function CommandDialogDemo() {
             <div className="flex gap-2 items-center px-3">
                 <Search className="size-5 text-muted-foreground" />
                 <input 
-                    className="p-2 rounded-lg outline-none m-1 w-full"
+                    className="p-2 rounded-lg outline-none m-1 w-full bg-background"
                     value={searchQuery}
                     onChange={(e)=>setSearchQuery(e.target.value)} 
                     placeholder="Type a command or search..." 
@@ -175,16 +166,15 @@ export function CommandDialogDemo() {
             </div>
             <Separator />
             <CommandList>
-                {isSearching && (
-                    <CommandEmpty>Searching...</CommandEmpty>
-                )}
-                
-                {hasNoResults && (
-                    <CommandEmpty>No results found.</CommandEmpty>
-                )}
-                
+                {isSearching && (<CommandEmpty>Searching...</CommandEmpty>)}
+                {hasNoResults && (<CommandEmpty>No results found.</CommandEmpty>)}
                 {displayUsers.length > 0 && (
-                    <CommandGroup heading="Users">
+                    <CommandGroup heading={
+                        <div className="flex items-center gap-2 text-emerald-600">
+                            <Users className="size-5" />
+                            <span className="text-sm">Users</span>
+                        </div>
+                    }>
                         {displayUsers.map((u: UserType) => (
                             <CommandItem key={u.id} onSelect={(_e) =>handleUserSelect(u.id)}>
                                 <div className="flex gap-2 justify-between items-center w-full">
@@ -201,35 +191,66 @@ export function CommandDialogDemo() {
                         ))}
                     </CommandGroup>
                 )}
-                
                 {displayUsers.length > 0 && displayClients.length > 0 && <CommandSeparator />}
-                
                 {displayClients.length > 0 && (
-                    <CommandGroup heading="Clients">
+                    <CommandGroup heading={
+                        <div className="flex items-center gap-2 text-blue-600">
+                            <Handshake className="size-5" />
+                            <span className="text-sm">Clients</span>
+                        </div>
+                    }>
                         {displayClients.map((c: ClientType) => (
                             <CommandItem key={c.id}>
-                                <span>{c.name}</span>
+                                <div className="flex gap-2 justify-between items-center w-full">
+                                    <div className="flex gap-2 items-center">    
+                                        <Avatar className="h-6 w-6 border border-gray-600">
+                                            <AvatarImage src={AssetUrl + c.image} alt={c.name} />
+                                            <AvatarFallback>{c.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-bold">
+                                            {c.name}{" "} 
+                                            <span className="text-xs font-thin text-muted-foreground capitalize">({c.client_size} Client)</span>
+                                        </span>
+                                    </div>
+                                    <Badge variant={'outline'} className={`${c.type === 'loading_point'?'text-blue-600':'text-green-600'} w-fit text-xs capitalize`}>{c.type.replace(/_/g, " ")}</Badge>
+                                </div>
                             </CommandItem>
                         ))}
                     </CommandGroup>
                 )}
                 
                 {displayClients.length > 0 && displayProducts.length > 0 && <CommandSeparator />}
-                
                 {displayProducts.length > 0 && (
-                    <CommandGroup heading="Products">
+                    <CommandGroup heading={
+                        <div className="flex items-center gap-2 text-amber-600">
+                            <ShoppingBasket className="size-5" />
+                            <span className="text-sm">Products</span>
+                        </div>
+                    }>
                         {displayProducts.map((p: ProductType) => (
                             <CommandItem key={p.id}>
-                                <span>{p.name}</span>
+                                <div className="flex gap-2 justify-between items-center w-full">
+                                    <div className="flex gap-2 items-center">    
+                                        <Avatar className="h-6 w-6 border border-gray-600">
+                                            <AvatarImage src={AssetUrl + p.image} alt={p.name} />
+                                            <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-bold">{p.name}</span>
+                                    </div>
+                                </div>
                             </CommandItem>
                         ))}
                     </CommandGroup>
                 )}
                 
                 {displayProducts.length > 0 && displayVehicles.length > 0 && <CommandSeparator />}
-                
                 {displayVehicles.length > 0 && (
-                    <CommandGroup heading="Vehicles">
+                    <CommandGroup heading={
+                        <div className="flex items-center gap-2 text-cyan-600">
+                            <Truck className="size-5" />
+                            <span className="text-sm">Vehicles</span>
+                        </div>
+                    }>
                         {displayVehicles.map((v: VehicleType) => (
                             <CommandItem key={v.id}>
                                 <span>{v.number}</span>
