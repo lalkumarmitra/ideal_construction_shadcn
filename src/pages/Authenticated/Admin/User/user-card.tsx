@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { AssetUrl } from "@/lib/helpers/api_helper"
 import { UserType } from "@/types/user"
-import { Eye, Loader, Loader2, MapPin, MoreHorizontal, Pencil, PencilLine, Phone, ShieldCheck, Trash, Trash2 } from "lucide-react"
+import { Loader, Loader2, Mail, MoreHorizontal, PencilLine, Phone, ScanEye, Trash, Trash2 } from "lucide-react"
 import CreateUserDialog from "./create-user-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -13,35 +13,44 @@ import { useNavigate, useParams } from "react-router-dom"
 import { user_apis } from "@/lib/helpers/api_urls"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import ChangeEmailPhoneDialog from "./change-email-phone"
 
 interface UserCardProps {
     user: UserType
 }
 
 const UserCard:React.FC<UserCardProps> = ({user}) => {
+    const navigate = useNavigate();
+    const handleNavigateToProfile = () =>navigate(`/users/profile/${user.id}`)
     return (
-        <Card>
-            <CardHeader>
+        <Card className="hover:shadow-md hover:scale-105 transition-all duration-300">
+            <CardHeader onClick={(e) => {
+                // Only navigate if the click is on the card itself, not on buttons or icons
+                if (!(e.target as HTMLElement).closest('button') && 
+                    !(e.target as HTMLElement).closest('[role="button"]')) {
+                    handleNavigateToProfile();
+                }
+            }} className="cursor-pointer">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                        <Avatar className="h-12 w-12">
+                        <Avatar className="h-12 w-12 border border-gray-400">
                             <AvatarImage src={AssetUrl + user.avatar} alt={user.name} />
                             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div className="grid gap-1"> 
-                            <h3 className="text-base font-semibold">
-                                {user.name.length > 16 ? user.name.substring(0, 13) + '...' : user.name}
-                                <CreateUserDialog defaultUser={user} >
-                                    <PencilLine className="size-5 ms-3 inline cursor-pointer hover:text-muted-foreground text-sky-600" />
-                                </CreateUserDialog>
+                        <div className="grid gap-2"> 
+                            <h3 className="text-sm font-semibold">
+                                {user.name.replace(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/g, '').length > 16 ? user.name.replace(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/g, ' ').substring(0, 13) + '...' : user.name.replace(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/g, ' ')}
                             </h3>
-                            <Badge className="w-fit" variant={'outline'} ><ShieldCheck className="h-4 w-4 mr-2" /> {user.role.name}</Badge>
+                            <Badge className="w-fit text-xs" variant={'outline'} >{user.role.name}</Badge>
                         </div>
                     </div>
-                    <UserCardOptions user={user}>
-                        <MoreHorizontal className="cursor-pointer hover:text-muted-foreground" />
-                    </UserCardOptions>
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <CreateUserDialog defaultUser={user} >
+                            <PencilLine className="size-5 ms-3 inline cursor-pointer hover:text-muted-foreground" />
+                        </CreateUserDialog>
+                        <UserCardOptions user={user}>
+                            <MoreHorizontal className="cursor-pointer hover:text-muted-foreground" />
+                        </UserCardOptions>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent>
@@ -51,18 +60,12 @@ const UserCard:React.FC<UserCardProps> = ({user}) => {
                             <Phone className="h-4 w-4 text-muted-foreground" />
                             <div className="text-sm flex justify-between items-center w-full">
                                 <span>{user.phone} </span>
-                                <ChangeEmailPhoneDialog user={user} type="phone">
-                                    <Pencil className="size-4 ms-3 inline cursor-pointer hover:text-muted-foreground" />
-                                </ChangeEmailPhoneDialog>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <Mail className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm flex justify-between items-center w-full">
                                 <span>{user.email} </span>
-                                <ChangeEmailPhoneDialog user={user} type="email">
-                                    <Pencil className="size-4 ms-3 inline cursor-pointer hover:text-muted-foreground" />
-                                </ChangeEmailPhoneDialog>
                             </span>
                         </div>
                     </div>
@@ -79,6 +82,7 @@ const UserCardOptions:React.FC<{user:UserType,children?:ReactNode}> = ({user,chi
     const queryClient = useQueryClient();
     const {page,offset} = useParams();
     const navigate = useNavigate();
+    const handleNavigateToProfile = () =>navigate(`/users/profile/${user.id}`)
     const userDeleteMutation = useMutation({
         mutationFn:(id:string|number) => user_apis.trash(id),
         onSuccess: res=> {
@@ -89,7 +93,7 @@ const UserCardOptions:React.FC<{user:UserType,children?:ReactNode}> = ({user,chi
         onError : (e:any) => toast.error(e?.response?.data?.message ?? e.message)
     })
     const handleUserDelete = () => userDeleteMutation.mutate(user.id)
-    const handleNavigateToProfile = () =>navigate(`/users/profile/${user.id}`)
+    
     return (
         <>
             <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -97,14 +101,14 @@ const UserCardOptions:React.FC<{user:UserType,children?:ReactNode}> = ({user,chi
                     {children?children:<MoreHorizontal className="cursor-pointer hover:text-muted-foreground" />}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleNavigateToProfile} className="text-green-600 cursor-pointer">
-                        <Eye className="size-4 me-2" />
+                    <DropdownMenuItem onClick={handleNavigateToProfile} className="cursor-pointer">
+                        <ScanEye className="size-4 me-2" />
                         <span>Profile</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={()=>{
                         setOpen(false);
                         setDeleteDialogOpen(true);
-                    }} className="text-destructive cursor-pointer">
+                    }} className="cursor-pointer">
                         <Trash className="size-4 me-2" />
                         <span>Delete</span>
                     </DropdownMenuItem>

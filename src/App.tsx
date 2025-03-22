@@ -9,6 +9,7 @@ import { routes } from './lib/Routes';
 import { Toaster } from './components/ui/sonner';
 import { PwaUpdate } from './components/ui/pwa-update';
 import { PWAInstallButton } from './components/ui/pwa-install-button';
+import { CommandDialogDemo } from './components/Custom/CommandSearch';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
 			<div className="fixed bottom-4 right-4 z-50">
 				<PWAInstallButton />
 			</div>
+			<CommandDialogDemo />
 			<PwaUpdate onUpdate={handleUpdate} />
 			<Routes>
 				{sanatizedRoutes(routes).map((r: RouteObject, i) => (

@@ -47,7 +47,7 @@ const UserPage = () => {
     
     const userListQuery = useQuery<any,any,UserQueryResponseType>({
         queryKey:['users',pageNumber,pageSize,usersRole],
-        queryFn: ()=>user_apis.list(pageNumber ?? 1,pageSize ?? 10, usersRole == 'all'? null: usersRole),
+        queryFn: ()=>user_apis.list(pageNumber ?? 1,pageSize ?? 10, usersRole == 'all'? null: '?&role_id='+usersRole),
         select: (res)=> res.data,
         staleTime : 10 * 60 * 60 * 100,
         gcTime : 10 * 60 * 60 * 100,
@@ -78,7 +78,7 @@ const UserPage = () => {
                         dropdownClassName="bg-background/40 backdrop-blur-sm"
                         onValueChange={v=>setPageSize(v)}
                         defaultValue={pageSize}
-                        options={Array.from([10,20,30,40,50,60,70,80,90,100]).map(i=>({label:`${i} per page`,value:i}))}
+                        options={Array.from([10,20,30,40,50,60]).map(i=>({label:`${i} per page`,value:i}))}
                     />
                     <Button onClick={()=>userListQuery.refetch()} variant="outline" size="icon">
                         <RefreshCw className={(userListQuery.isLoading || userListQuery.isRefetching)?"animate-spin size-4": "size-4"} />
