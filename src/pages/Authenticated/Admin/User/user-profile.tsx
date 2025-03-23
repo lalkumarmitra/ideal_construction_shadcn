@@ -2,19 +2,18 @@ import { user_apis } from "@/lib/helpers/api_urls";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import { UserType } from "@/types/user";
 import { TransactionType } from "@/types/typedef";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Phone, Mail, Package, Calendar, MapPin, MailPlus, PhoneIncoming } from "lucide-react";
+import { Phone, Mail, Package, Calendar, MapPin, MailPlus, PhoneIncoming, FileText, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import DatePickerWithRange from "@/components/Custom/DatePickerWithRange";
 import ChangeEmailPhoneDialog from "./change-email-phone";
 import { AssetUrl } from "@/lib/helpers/api_helper";
+import { CustomSelect } from "@/components/Custom/CustomSelect";
 
 interface UserProfileResponse {
 	user: UserType;
@@ -82,7 +82,7 @@ const UserProfile = () => {
 	const prepareFormData = () => {
 		const formData = new FormData();
 		formData.append("page", currentPage.toString());
-		formData.append("per_page", perPage.toString());
+		formData.append("offset", perPage.toString());
 		if (dateRange?.from) formData.append("from_date", format(dateRange.from, "yyyy-MM-dd"));
 		if (dateRange?.to) formData.append("to_date", format(dateRange.to, "yyyy-MM-dd"));
 		return formData;
@@ -148,6 +148,29 @@ const UserProfile = () => {
 				return <Badge>{role}</Badge>;
 		}
 	};
+	const { mutate:download, isPending:downloading } = useMutation({
+		mutationFn: (payload: FormData) => user_apis.payroll(payload,userProfileQuery.data?.user.id || ''),
+		onSuccess: (data) => {
+			const url = window.URL.createObjectURL(new Blob([data]));
+			const link = document.createElement("a");
+			link.href = url;
+			link.setAttribute("download",`${userProfileQuery.data?.user.name}_(${format(dateRange?.from || new Date(), "dd-MM-yyyy")}-${format(dateRange?.to || dateRange?.from || new Date(),'dd-MM-yyyy')})_payroll.pdf`);
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+		},
+		onError: (error:any) => toast.error("Download failed : "+ error?.response?.data?.message || 'unkonwn error'),
+	});
+	const handleGeneratePdf = () =>  {
+		const formData = new FormData();
+		if(dateRange?.from && dateRange?.to){
+			formData.append('start_date',format(dateRange.from, "yyyy-MM-dd"))
+			formData.append('end_date',format(dateRange.to, "yyyy-MM-dd"))
+		}else{
+			formData.append('month',((new Date()).getMonth()+1).toString())
+		}
+		download(formData);
+	}
 
 	return (
 		<div className="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -231,284 +254,224 @@ const UserProfile = () => {
 
 					{userProfileQuery.data.user.role.type === 'driver' && (
 						<Card>
-						<CardHeader>
-							<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-							<CardTitle>Transaction History</CardTitle>
-							<div className="flex flex-col sm:flex-row gap-3">
-								<DatePickerWithRange
-								defaultDate={dateRange}
-								onDateChange={handleDateRangeChange}
-								placeholder="Filter by date range"
-								className="w-full sm:w-auto"
-								/>
-								<Select
-								value={perPage.toString()}
-								onValueChange={handlePerPageChange}
-								>
-								<SelectTrigger className="w-full sm:w-[150px]">
-									<SelectValue placeholder="Rows per page" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="10">10 per page</SelectItem>
-									<SelectItem value="25">25 per page</SelectItem>
-									<SelectItem value="50">50 per page</SelectItem>
-									<SelectItem value="100">100 per page</SelectItem>
-								</SelectContent>
-								</Select>
-							</div>
-							</div>
-						</CardHeader>
-						<CardContent>
-							<div className="rounded-md border">
-							<Table>
-								<TableHeader>
-								<TableRow>
-									<TableHead className="w-16">ID</TableHead>
-									<TableHead>
-									<div className="flex items-center gap-1">
-										<Calendar className="h-4 w-4" />
-										Date
+							<CardHeader>
+								<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+									<CardTitle>Transaction History</CardTitle>
+									<div className="flex flex-col sm:flex-row gap-3">
+										<DatePickerWithRange
+											defaultDate={dateRange}
+											onDateChange={handleDateRangeChange}
+											placeholder="Filter by date range"
+											className="w-full sm:w-auto"
+										/>
+										<div className="flex gap-2">
+											<CustomSelect 
+												className="w-full"
+												dropdownClassName="bg-background/40 backdrop-blur-sm col-span-4"
+												options={Array.from([10,25,50,100]).map(i=>({
+													label:`${i} per page`,
+													value:i.toString()
+												}))}
+												onValueChange={handlePerPageChange}
+												defaultValue={perPage.toString()}											
+											/>
+											<Button disabled={downloading} variant={'outline'} size={'icon'} className="aspect-square" onClick={handleGeneratePdf}>
+												{downloading?<Loader2 className="size-4 animate-spin" />:<FileText className="h-4 w-4" />}
+											</Button>
+										</div>
+										
 									</div>
-									</TableHead>
-									<TableHead>
-									<div className="flex items-center gap-1">
-										<Package className="h-4 w-4" />
-										Product
-									</div>
-									</TableHead>
-									<TableHead>
-									<div className="flex items-center gap-1">
-										<MapPin className="h-4 w-4" />
-										Route
-									</div>
-									</TableHead>
-									<TableHead className="text-right">Quantity</TableHead>
-									<TableHead className="text-right">Expense</TableHead>
-								</TableRow>
-								</TableHeader>
-								<TableBody>
-								{userProfileQuery.data.transactions.data.length === 0 ? (
-									<TableRow>
-									<TableCell
-										colSpan={6}
-										className="h-24 text-center text-muted-foreground"
-									>
-										No transactions found.
-									</TableCell>
-									</TableRow>
-								) : (
-									userProfileQuery.data.transactions.data.map(
-									(transaction) => (
-										<TableRow key={transaction.id}>
-										<TableCell className="font-medium">
-											{transaction.id}
-											<div className="text-xs text-muted-foreground">
-											#{transaction.challan_number}
-											</div>
-										</TableCell>
-										<TableCell>
-											{new Date(
-											transaction.unloading_date || 
-											transaction.loading_date
-											).toLocaleDateString()}
-										</TableCell>
-										<TableCell>
-											<HoverCard>
-											<HoverCardTrigger asChild>
-												<Button
-												variant="link"
-												className="p-0 h-auto text-left font-normal"
-												>
-												{transaction.product?.name}
-												</Button>
-											</HoverCardTrigger>
-											<HoverCardContent className="w-80">
-												<div className="space-y-2">
-												<h4 className="text-sm font-semibold">
-													{transaction.product?.name}
-												</h4>
-												<div className="text-xs">
-													<p>
-													<span className="font-medium">Unit:</span>{" "}
-													{transaction.product?.unit}
-													</p>
-													<p>
-													<span className="font-medium">
-														Description:
-													</span>{" "}
-													{transaction.product?.description || "N/A"}
-													</p>
-													{(transaction?.product?.rate || 0) > 0 && (
-													<p>
-														<span className="font-medium">
-														Rate:
-														</span>{" "}
-														₹{transaction.product?.rate}
-													</p>
-													)}
-												</div>
-												</div>
-											</HoverCardContent>
-											</HoverCard>
-										</TableCell>
-										<TableCell>
-											<HoverCard>
-											<HoverCardTrigger asChild>
-												<Button
-												variant="link"
-												className="p-0 h-auto text-left font-normal"
-												>
-												{transaction.loading_point?.name} →{" "}
-												{transaction.unloading_point?.name}
-												</Button>
-											</HoverCardTrigger>
-											<HoverCardContent className="w-80">
-												<div className="space-y-3">
-												<div>
-													<h4 className="text-sm font-semibold">
-													Loading Point
-													</h4>
-													<p className="text-xs">
-													{transaction.loading_point?.name}
-													</p>
-													{transaction.loading_point?.address && (
-													<p className="text-xs text-muted-foreground">
-														{transaction.loading_point?.address}
-													</p>
-													)}
-												</div>
-												<div>
-													<h4 className="text-sm font-semibold">
-													Unloading Point
-													</h4>
-													<p className="text-xs">
-													{transaction.unloading_point?.name}
-													</p>
-													{transaction.unloading_point?.address && (
-													<p className="text-xs text-muted-foreground">
-														{transaction.unloading_point?.address}
-													</p>
-													)}
-												</div>
-												</div>
-											</HoverCardContent>
-											</HoverCard>
-										</TableCell>
-										<TableCell className="text-right">
-											{parseFloat(
-											transaction.unloading_quantity || "0"
-											).toFixed(2)}{" "}
-											<span className="text-xs text-muted-foreground">
-											MT
-											</span>
-										</TableCell>
-										<TableCell className="text-right">
-											{transaction.transport_expense
-											? `₹${Number(
-												transaction.transport_expense
-												).toLocaleString()}`
-											: "–"}
-										</TableCell>
+								</div>
+							</CardHeader>
+							<CardContent>
+								<div className="rounded-md border">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="w-16">ID</TableHead>
+											<TableHead>
+												<div className="flex items-center gap-1"><Calendar className="h-4 w-4" />Date</div>
+											</TableHead>
+											<TableHead>
+												<div className="flex items-center gap-1"><Package className="h-4 w-4" />Product</div>
+											</TableHead>
+											<TableHead>
+												<div className="flex items-center gap-1"><MapPin className="h-4 w-4" />Route</div>
+											</TableHead>
+											<TableHead className="text-right">Challan</TableHead>
+											<TableHead className="text-right">Quantity</TableHead>
+											<TableHead className="text-right">Expense</TableHead>
 										</TableRow>
-									)
-									)
-								)}
-								</TableBody>
-							</Table>
-							</div>
-						</CardContent>
-						<CardFooter>
-							<div className="w-full flex items-center justify-between">
-							<div className="text-sm text-muted-foreground">
-								Showing{" "}
-								<strong>
-								{userProfileQuery.data.transactions.data.length}
-								</strong>{" "}
-								of{" "}
-								<strong>{userProfileQuery.data.transactions.total}</strong>{" "}
-								transactions
-							</div>
-							{userProfileQuery.data.transactions.last_page > 1 && (
-								<Pagination>
-								<PaginationContent>
-									<PaginationItem>
-									<PaginationPrevious
-										onClick={() => {
-										if (currentPage > 1) {
-											handlePageChange(currentPage - 1);
-										}
-										}}
-										className={
-										currentPage === 1
-											? "pointer-events-none opacity-50"
-											: "cursor-pointer"
-										}
-									/>
-									</PaginationItem>
-									
-									{Array.from(
-									{ length: userProfileQuery.data.transactions.last_page },
-									(_, i) => i + 1
-									).map((page) => {
-									// Show first page, last page, and pages around current page
-									if (
-										page === 1 ||
-										page === userProfileQuery.data.transactions.last_page ||
-										(page >= currentPage - 2 && page <= currentPage + 2)
-									) {
-										return (
-										<PaginationItem key={page}>
-											<PaginationLink
-											onClick={() => handlePageChange(page)}
-											isActive={page === currentPage}
-											>
-											{page}
-											</PaginationLink>
+									</TableHeader>
+									<TableBody>
+									{userProfileQuery.data.transactions.data.length === 0 ? (
+										<TableRow>
+											<TableCell colSpan={6}className="h-24 text-center text-muted-foreground">
+												No transactions found.
+											</TableCell>
+										</TableRow>
+									) : (
+										userProfileQuery.data.transactions.data.map(
+										(transaction) => (
+											<TableRow key={transaction.id}>
+												<TableCell className="font-medium">{transaction.id}</TableCell>
+												<TableCell>{new Date(transaction.unloading_date || transaction.loading_date).toLocaleDateString()}</TableCell>
+												<TableCell>
+													<HoverCard>
+														<HoverCardTrigger asChild>
+															<Button variant="link" className="p-0 h-auto text-left font-normal">
+																{transaction.product?.name}
+															</Button>
+														</HoverCardTrigger>
+														<HoverCardContent className="w-80">
+															<div className="space-y-2">
+																<h4 className="text-sm font-semibold">{transaction.product?.name}</h4>
+																<div className="text-xs">
+																	<p><span className="font-medium">Unit:</span>{" "}{transaction.product?.unit}</p>
+																	<p><span className="font-medium">Description:</span>{" "}{transaction.product?.description || "N/A"}</p>
+																	{(transaction?.product?.rate || 0) > 0 && (
+																		<p><span className="font-medium">Rate:</span>{" "}₹{transaction.product?.rate}</p>
+																	)}
+																</div>
+															</div>
+														</HoverCardContent>
+													</HoverCard>
+												</TableCell>
+												<TableCell>
+													<HoverCard>
+														<HoverCardTrigger asChild>
+															<Button variant="link" className="p-0 h-auto text-left font-normal">
+																{transaction.loading_point?.name} →{" "}
+																{transaction.unloading_point?.name}
+															</Button>
+														</HoverCardTrigger>
+														<HoverCardContent className="w-80">
+															<div className="space-y-3">
+																<div>
+																	<h4 className="text-sm font-semibold">Loading Point</h4>
+																	<p className="text-xs">{transaction.loading_point?.name}</p>
+																	{transaction.loading_point?.address && (
+																		<p className="text-xs text-muted-foreground">{transaction.loading_point?.address}</p>
+																	)}
+																</div>
+																<div>
+																	<h4 className="text-sm font-semibold">Unloading Point</h4>
+																	<p className="text-xs">{transaction.unloading_point?.name}</p>
+																	{transaction.unloading_point?.address && (
+																		<p className="text-xs text-muted-foreground">{transaction.unloading_point?.address}</p>
+																	)}
+																</div>
+															</div>
+														</HoverCardContent>
+													</HoverCard>
+												</TableCell>
+												<TableCell>{<div className="text-xs text-right text-muted-foreground">#{transaction.challan_number}</div>}</TableCell>
+												<TableCell className="text-right">
+													{parseFloat(transaction.unloading_quantity || "0").toFixed(2)}{" "}
+													<span className="text-xs text-muted-foreground uppercase">{transaction.unit}</span>
+												</TableCell>
+												<TableCell className="text-right">
+													{transaction.transport_expense? `₹${Number(transaction.transport_expense).toLocaleString()}`: "-"}
+												</TableCell>
+											</TableRow>
+										))
+									)}
+									</TableBody>
+								</Table>
+								</div>
+							</CardContent>
+							<CardFooter>
+								<div className="w-full flex items-center justify-between">
+								<div className="text-sm text-muted-foreground">
+									Showing{" "}
+									<strong>
+									{userProfileQuery.data.transactions.data.length}
+									</strong>{" "}
+									of{" "}
+									<strong>{userProfileQuery.data.transactions.total}</strong>{" "}
+									transactions
+								</div>
+								{userProfileQuery.data.transactions.last_page > 1 && (
+									<Pagination>
+									<PaginationContent>
+										<PaginationItem>
+										<PaginationPrevious
+											onClick={() => {
+											if (currentPage > 1) {
+												handlePageChange(currentPage - 1);
+											}
+											}}
+											className={
+											currentPage === 1
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+											}
+										/>
 										</PaginationItem>
-										);
-									}
-									
-									// Add ellipsis where needed
-									if (
-										(page === 2 && currentPage > 4) ||
-										(page === userProfileQuery.data.transactions.last_page - 1 &&
-										currentPage < userProfileQuery.data.transactions.last_page - 3)
-									) {
-										return (
-										<PaginationItem key={page}>
-											<span className="flex h-9 w-9 items-center justify-center">
-											...
-											</span>
-										</PaginationItem>
-										);
-									}
-									
-									return null;
-									})}
-									
-									<PaginationItem>
-									<PaginationNext
-										onClick={() => {
+										
+										{Array.from(
+										{ length: userProfileQuery.data.transactions.last_page },
+										(_, i) => i + 1
+										).map((page) => {
+										// Show first page, last page, and pages around current page
 										if (
-											currentPage <
-											userProfileQuery.data.transactions.last_page
+											page === 1 ||
+											page === userProfileQuery.data.transactions.last_page ||
+											(page >= currentPage - 2 && page <= currentPage + 2)
 										) {
-											handlePageChange(currentPage + 1);
+											return (
+											<PaginationItem key={page}>
+												<PaginationLink
+												onClick={() => handlePageChange(page)}
+												isActive={page === currentPage}
+												>
+												{page}
+												</PaginationLink>
+											</PaginationItem>
+											);
 										}
-										}}
-										className={
-										currentPage ===
-										userProfileQuery.data.transactions.last_page
-											? "pointer-events-none opacity-50"
-											: "cursor-pointer"
+										
+										// Add ellipsis where needed
+										if (
+											(page === 2 && currentPage > 4) ||
+											(page === userProfileQuery.data.transactions.last_page - 1 &&
+											currentPage < userProfileQuery.data.transactions.last_page - 3)
+										) {
+											return (
+											<PaginationItem key={page}>
+												<span className="flex h-9 w-9 items-center justify-center">
+												...
+												</span>
+											</PaginationItem>
+											);
 										}
-									/>
-									</PaginationItem>
-								</PaginationContent>
-								</Pagination>
-							)}
-							</div>
-						</CardFooter>
+										
+										return null;
+										})}
+										
+										<PaginationItem>
+										<PaginationNext
+											onClick={() => {
+											if (
+												currentPage <
+												userProfileQuery.data.transactions.last_page
+											) {
+												handlePageChange(currentPage + 1);
+											}
+											}}
+											className={
+											currentPage ===
+											userProfileQuery.data.transactions.last_page
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+											}
+										/>
+										</PaginationItem>
+									</PaginationContent>
+									</Pagination>
+								)}
+								</div>
+							</CardFooter>
 						</Card>
 					)}
 				</>

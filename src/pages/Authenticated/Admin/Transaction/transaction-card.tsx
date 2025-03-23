@@ -126,7 +126,7 @@ export function TransactionCard({ transaction }: { transaction: TransactionType 
                 <Separator className="my-4" />
                 <div className="text-xs text-muted-foreground flex justify-between">
                     <span>DO: {transaction.do_number || "N/A"}</span>
-                    <span>Challan: {transaction.challan || "N/A"}</span>
+                    <span>Challan: {transaction.challan_number|| "N/A"}</span>
                 </div>
             </CardContent>
         </Card>

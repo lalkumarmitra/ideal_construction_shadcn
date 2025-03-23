@@ -55,7 +55,14 @@ export const user_apis = {
     changePhone:(id:string|number,phone:string)=>get(`/update-user-phone/${id}/${phone}`),
     changeEmail:(id:string|number,email:string)=>get(`/update-user-email/${id}/${email}`),
     changePassword:(data:FormData)=>post(`/update-user-password`,data),
+    payroll:(data:FormData,userId:string|number)=>post(`/user-payroll/${userId}`,data,{
+        responseType: 'blob',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
 }
+
 
 export const transaction_apis = {
     create:(formData:FormData)=>post('/new-transaction',formData),
