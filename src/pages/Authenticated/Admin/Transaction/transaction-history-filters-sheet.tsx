@@ -115,7 +115,9 @@ const TransactionHistoryFiltersSheet = ({ onFilterUpdate }: TransactionHistoryFi
                                 <div className="grid gap-2">
                                     <Label><Handshake className="inline size-4 me-2 text-blue-600"/>Loading Points</Label>
                                     <MultiselectCombobox 
-                                        options={clientListQuery.data?.filter(cl=>cl.type === 'loading_point')?.map(p=>({label:p.name,value:p.id}))} 
+                                        options={clientListQuery.data?.filter(cl=>cl.type === 'loading_point')?.sort((a, b) =>
+                                            a.name.localeCompare(b.name)
+                                          ).map(p=>({label:p.name,value:p.id}))} 
                                         placeholder="Select Loading Points"
                                         name="loading_point_ids"
                                     />
@@ -145,7 +147,9 @@ const TransactionHistoryFiltersSheet = ({ onFilterUpdate }: TransactionHistoryFi
                                 <div className="grid gap-2">
                                     <Label><Handshake className="inline size-4 me-2 text-green-600"/>Unoading Points</Label>
                                     <MultiselectCombobox 
-                                        options={clientListQuery.data?.filter(cl=>cl.type === 'unloading_point')?.map(p=>({label:p.name,value:p.id}))} 
+                                        options={clientListQuery.data?.filter(cl=>cl.type === 'unloading_point')?.sort((a, b) =>
+                                            a.name.localeCompare(b.name)
+                                          ).map(p=>({label:p.name,value:p.id}))} 
                                         name="unloading_point_ids"
                                         placeholder="Select Unloading Points"
                                     />

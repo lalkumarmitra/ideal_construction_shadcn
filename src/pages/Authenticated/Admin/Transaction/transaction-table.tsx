@@ -35,7 +35,7 @@ export const TransactionTable = ({ transactions, sortConfig, handleSort, columns
             <Table className={styles.table}>
                 <TableHeaderComponent sortConfig={sortConfig} handleSort={handleSort} columnsFilters={columnsFilters} />
                 <TableBody>
-                    {transactions.map((transaction, i) => (
+                    {transactions.map((transaction:TransactionType, i:number) => (
                         <TableRow key={transaction.id} className={cn("group whitespace-nowrap", i % 2 === 0 ? "" : "bg-muted/50")}>
                             {columnsFilters?.transaction_id?.status === 'show' && (
                                 <TableCell className="font-medium">#{transaction.id}</TableCell>

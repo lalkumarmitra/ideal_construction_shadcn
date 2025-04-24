@@ -7,7 +7,7 @@ import { transaction_apis } from "@/lib/helpers/api_urls";
 import TransactionHistoryFiltersSheet from "./transaction-history-filters-sheet";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DownloadCloud, FileSpreadsheet, FileTextIcon, Loader2, RefreshCw, TableProperties } from "lucide-react";
+import { DownloadCloud, FileSpreadsheet, FileTextIcon, FilterIcon, Loader2, RefreshCw, TableProperties, X } from "lucide-react";
 
 import { TransactionHistoryTableSkeleton } from "./transaction-table-skeleton";
 import { TransactionPagination } from "./transaction-pagination";
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CustomSelect } from "@/components/Custom/CustomSelect";
+import { Badge } from "@/components/ui/badge";
 
 
 const TransactionHistoryPage = () => {
@@ -232,6 +233,19 @@ const TransactionHistoryPage = () => {
                         <RefreshCw className={(transactionHistoryQuery.isLoading || transactionHistoryQuery.isRefetching)?"animate-spin size-4": "size-4"} />
                     </Button>
                 </div>
+                    {Array.from(filterFormData?.entries() ?? []).length > 0 && (
+                        <div className="flex gap-2">
+                            <Badge variant="secondary" className="text-xs">
+                                <FilterIcon className="inline size-4 me-2" />
+                                <span className="text-xs bg-background rounded-full px-2 py-1 me-1">{Array.from(filterFormData?.entries() ?? []).length} </span>
+                                Filters Applied
+                                <X className="inline size-4 ml-2 cursor-pointer" onClick={() => {
+                                    const newFilterFormData = new FormData();
+                                    setFilterFormData(newFilterFormData);
+                                }} />
+                            </Badge>
+                        </div>
+                    )}
             </div>
             <Card className="overflow-hidden border-border/40">
                 <CardContent className="p-0 flex flex-col">

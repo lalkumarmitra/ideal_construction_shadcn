@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AssetUrl } from "@/lib/helpers/api_helper"
 import { ProductType } from "@/types/typedef"
@@ -9,25 +9,27 @@ import logo from '@/assets/logo_sm_transparent.png'
 import { EyeIcon, IndianRupee, Loader, Loader2, PenLine, ShoppingBasket, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useState } from "react"
+import React, { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { product_apis } from "@/lib/helpers/api_urls"
 import { toast } from "sonner"
 import { useParams } from "react-router-dom"
 import CreateProductModal from "./create-product-modal"
+import { cn } from "@/lib/utils"
 
 
 export default function ProductCard({ product }: { product: ProductType }) {
   return (
-    <Card key={product.id} className="flex flex-col justify-between">
+    <Card key={product.id} className="flex flex-col justify-between hover:scale-105 transition-all duration-300">
         <CardHeader className="flex flex-row justify-between items-center">
-            <div className="flex flex-row gap-4 items-center">
+            <div className="flex gap-4 items-center">
                 <Avatar>
                     <AvatarImage src={AssetUrl + product.image} />
                     <AvatarFallback><img src={logo} /></AvatarFallback>
                 </Avatar>
                 <CardTitle className="text-lg font-semibold mb-2">{product.name}</CardTitle>
             </div>
+            <ProductCardOptions product={product} />
         </CardHeader>
         <CardContent>
             <div className="flex justify-between items-center mb-4">
@@ -36,14 +38,15 @@ export default function ProductCard({ product }: { product: ProductType }) {
             </div>
             <p className="text-sm text-gray-600 line-clamp-1">{product.description || '.....'}</p>
         </CardContent>
-        <CardFooter className="flex flex-row justify-end pt-1">
-            <ProductCardOptions product={product} />
-        </CardFooter>
     </Card>
   )
 }
 
-const ProductCardOptions = ({ product }: { product: ProductType }) => {
+interface ProductCardOptionsProps {
+    product: ProductType;
+    className?: string;
+}
+const ProductCardOptions: React.FC<ProductCardOptionsProps> = ({ product, className }) => {
     const [deleteDialogOpen,setDeleteDialogOpen] = useState(false);
     const queryClient = useQueryClient();
     const {page,offset} = useParams();
@@ -58,14 +61,12 @@ const ProductCardOptions = ({ product }: { product: ProductType }) => {
     });
     const handleProductDelete = () => productDeleteMutation.mutate(product.id)
     return <>
-        <div className="grid gap-2 grid-cols-3">
-            <Button variant={'outline'} size={'icon'}><EyeIcon className="size-4 inline text-green-600" /></Button>
+        <div className={cn("group grid gap-3 grid-cols-3 place-items-center place-content-center border rounded-lg p-2 hover:scale-105 hover:shadow-md transition-all duration-300",className)}>
+            <EyeIcon className="size-4 inline cursor-pointer text-muted-foreground hover:text-green-500 group-hover:text-green-500" />
             <CreateProductModal defaultProduct={product}>
-                <Button variant={'outline'} size={'icon'}> 
-                    <PenLine className="size-4 inline" />
-                </Button>
+                <PenLine className="size-4 inline cursor-pointer text-muted-foreground hover:text-cyan-600 group-hover:text-cyan-600" />
             </CreateProductModal>
-            <Button variant={'outline'} onClick={()=>setDeleteDialogOpen(!deleteDialogOpen)} size={'icon'}><Trash2 className="size-4 inline text-destructive" /></Button>
+            <Trash2 onClick={()=>setDeleteDialogOpen(!deleteDialogOpen)} className="size-4 inline cursor-pointer text-muted-foreground hover:text-red-600 group-hover:text-red-600" />
         </div>
         
         <Dialog open={productDeleteMutation.isPending || deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

@@ -210,7 +210,8 @@ const AdminDashboard = () => {
 					</div>
 				</div>
     		</div>
-
+			
+			<QuickActionGrid />
 
 			{/* Loading state */}
 			{isLoading && (
@@ -230,7 +231,6 @@ const AdminDashboard = () => {
 					</CardContent>
 				</Card>
 			)}
-			<QuickActionGrid />
       		{/* Dashboard content */}
       		{dashboardData && (
         		<>

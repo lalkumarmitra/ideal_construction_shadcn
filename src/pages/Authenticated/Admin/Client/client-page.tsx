@@ -1,7 +1,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import { useParams } from "react-router-dom";
 import { ClientType } from "@/types/typedef";
@@ -25,9 +25,10 @@ type ClientListQueryResponseType = {
 const ClientPage = () => {
     const dispatch = useAppDispatch();
     const {page,offset} = useParams();
+    const searchText = useAppSelector(state => state.ui.searchText);
     const clientListQuery = useQuery<any,any, ClientListQueryResponseType>({
-        queryKey:['clients',page,offset],
-        queryFn: ()=>client_apis.list(page ?? 1,offset ?? 10),
+        queryKey:['clients',page,offset,searchText],
+        queryFn: ()=>client_apis.list(page ?? 1,offset ?? 10, searchText?'?&search_query='+searchText:null),
         select: (res)=> res.data,
         staleTime : 10 * 60 * 60 * 100,
         gcTime : 10 * 60 * 60 * 100,

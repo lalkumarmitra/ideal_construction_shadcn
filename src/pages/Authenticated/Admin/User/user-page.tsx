@@ -1,7 +1,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import CreateUserDialog from "./create-user-dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +24,7 @@ type UserQueryResponseType = {
 
 const UserPage = () => {
     const dispatch = useAppDispatch();
+    const searchText = useAppSelector(state=>state.ui.searchText);
     const [pageSize,setPageSize] = useState<string|undefined>(() => {
         const config = localStorage.getItem('userpageconfig');
         return config ? JSON.parse(config).pageSize : 10;
@@ -46,8 +47,8 @@ const UserPage = () => {
     }, [pageSize, pageNumber, usersRole]);
     
     const userListQuery = useQuery<any,any,UserQueryResponseType>({
-        queryKey:['users',pageNumber,pageSize,usersRole],
-        queryFn: ()=>user_apis.list(pageNumber ?? 1,pageSize ?? 10, usersRole == 'all'? null: '?&role_id='+usersRole),
+        queryKey:['users',pageNumber,pageSize,usersRole,searchText],
+        queryFn: ()=>user_apis.list(pageNumber ?? 1,pageSize ?? 10, usersRole == 'all'? '?&search_query='+searchText: '?&role_id='+usersRole+'&search_query='+searchText),
         select: (res)=> res.data,
         staleTime : 10 * 60 * 60 * 100,
         gcTime : 10 * 60 * 60 * 100,

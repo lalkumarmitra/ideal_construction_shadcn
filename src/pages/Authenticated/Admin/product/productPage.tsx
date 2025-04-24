@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import ProductCard from "./product-card";
 import { useEffect } from "react";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setBreadcrumb } from "@/redux/Features/uiSlice";
 import CreateProductModal from "./create-product-modal";
 import { ListPagination } from "@/components/Custom/ListPagination";
@@ -22,10 +22,11 @@ type ProductQueryResponseType = {
 
 const ProductPage = () => {
     const dispatch = useAppDispatch();
+    const searchText = useAppSelector(state=>state.ui.searchText);
     const {page,offset} = useParams();
     const productListQuery = useQuery<any,any,ProductQueryResponseType>({
-        queryKey:['products',page,offset],
-        queryFn: ()=>product_apis.list(page ?? 1,offset ?? 10),
+        queryKey:['products',page,offset,searchText],
+        queryFn: ()=>product_apis.list(page ?? 1,offset ?? 10, searchText?'?&search_query='+searchText:null),
         select: (res)=> res.data,
         staleTime : 10 * 60 * 60 * 100,
         gcTime : 10 * 60 * 60 * 100,
